@@ -8,9 +8,7 @@ from os_fingerprint.helpers import update_confidence
 
 
 # Regex patterns used only by the Windows parser
-WIN_EDITION_RE = re.compile(
-    r"\b(professional|enterprise|home|education|server|ltsc)\b", re.I
-)
+WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|server|ltsc)\b", re.I)
 WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.I)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.I)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.I)

@@ -16,11 +16,16 @@ dev = [
 [tool.ruff]
 line-length = 120
 target-version = "py313"
+
+[tool.ruff.lint]
 select = [
     "ALL", # include all the rules, including new ones
 ]
 ignore = [
+    "D203",
+    "D213",
     "D400",
     "D415",
     "T201",
+    "COM812",
 ]

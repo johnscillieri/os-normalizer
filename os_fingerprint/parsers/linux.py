@@ -10,9 +10,7 @@ from os_fingerprint.helpers import update_confidence, parse_os_release
 # Regex patterns used only by the Linux parser
 KERNEL_RE = re.compile(r"\b(kernel|uname)\b.*?\b(\d+\.\d+(?:\.\d+)?(?:-\S+)?)", re.I)
 # Looser Linux fallback: "Linux host 5.15.0-122-generic x86_64"
-LINUX_VER_FALLBACK_RE = re.compile(
-    r"\bLinux\b[^\n]*?\b(\d+\.\d+(?:\.\d+)?(?:-[A-Za-z0-9._-]+)?)\b", re.I
-)
+LINUX_VER_FALLBACK_RE = re.compile(r"\bLinux\b[^\n]*?\b(\d+\.\d+(?:\.\d+)?(?:-[A-Za-z0-9._-]+)?)\b", re.I)
 
 
 def parse_linux(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
@@ -42,11 +40,7 @@ def parse_linux(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
             p.distro = distro_id.lower()
         like = osrel.get("ID_LIKE")
         if like:
-            p.like_distros = (
-                [s.lower() for s in like]
-                if isinstance(like, list)
-                else [str(like).lower()]
-            )
+            p.like_distros = [s.lower() for s in like] if isinstance(like, list) else [str(like).lower()]
         p.pretty_name = osrel.get("PRETTY_NAME") or osrel.get("NAME")
 
         vid = osrel.get("VERSION_ID")
@@ -81,17 +75,11 @@ def parse_linux(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
         if p.distro:
             p.vendor = vendor_by_distro.get(p.distro)
 
-        p.product = (
-            p.pretty_name.split()[0] if p.pretty_name else (p.distro or "Linux")
-        ).replace('"', "")
+        p.product = (p.pretty_name.split()[0] if p.pretty_name else (p.distro or "Linux")).replace('"', "")
         p.precision = (
             "patch"
             if p.version_patch is not None
-            else (
-                "minor"
-                if p.version_minor is not None
-                else ("major" if p.version_major is not None else "family")
-            )
+            else ("minor" if p.version_minor is not None else ("major" if p.version_major is not None else "family"))
         )
         update_confidence(p, p.precision)
     else:

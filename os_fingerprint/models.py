@@ -32,12 +32,8 @@ class OSParse:
 
     # Core identity
     family: Optional[str] = None  # windows, linux, macos, ios, android, bsd, network-os
-    vendor: Optional[str] = (
-        None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
-    )
-    product: Optional[str] = (
-        None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
-    )
+    vendor: Optional[str] = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
+    product: Optional[str] = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
     edition: Optional[str] = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
     codename: Optional[str] = None  # Sequoia; Ubuntu codename; Cisco train
     channel: Optional[str] = None  # LTS/Beta/GA/R3‑S3 etc.

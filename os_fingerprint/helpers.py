@@ -53,25 +53,14 @@ def canonical_key(p: Any) -> str:
     """
     vendor = (p.vendor or "-").lower()
     product = (p.product or "-").lower()
-    version = (
-        ".".join(
-            [
-                str(x)
-                for x in [p.version_major, p.version_minor, p.version_patch]
-                if x is not None
-            ]
-        )
-        or "-"
-    )
+    version = ".".join([str(x) for x in [p.version_major, p.version_minor, p.version_patch] if x is not None]) or "-"
     edition = (p.edition or "-").lower()
     codename = (p.codename or "-").lower()
     return f"{vendor}:{product}:{version}:{edition}:{codename}"
 
 
 # Regex for extracting an architecture token from free‑form text
-ARCH_TEXT_RE = re.compile(
-    r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le)\b", re.I
-)
+ARCH_TEXT_RE = re.compile(r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le)\b", re.I)
 
 
 def extract_arch_from_text(text: str) -> Optional[str]:
@@ -97,11 +86,7 @@ def parse_os_release(blob_text: str) -> Dict[str, Any]:
         k, v = line.split("=", 1)
         k = k.strip().upper()
         if k == "ID_LIKE":
-            out[k] = [
-                s.strip().lower()
-                for s in re.split(r"[ ,]+", v.strip("\"'").strip())
-                if s
-            ]
+            out[k] = [s.strip().lower() for s in re.split(r"[ ,]+", v.strip("\"'").strip()) if s]
         else:
             out[k] = v.strip("\"'")
     return out

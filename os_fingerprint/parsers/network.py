@@ -12,25 +12,19 @@ from os_fingerprint.helpers import update_confidence
 CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.I)
 CISCO_IOS_RE = re.compile(r"\bios(?!\s?xe)\b", re.I)
 CISCO_NXOS_RE = re.compile(r"\bnx-?os\b|\bNexus Operating System\b", re.I)
-CISCO_VERSION_RE = re.compile(
-    r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.I
-)
+CISCO_VERSION_RE = re.compile(r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.I)
 CISCO_IMAGE_RE = re.compile(r"\b([a-z0-9][a-z0-9_.-]+\.bin)\b", re.I)
 CISCO_MODEL_RE = re.compile(
     r"\b(N9K-[A-Z0-9-]+|C\d{3,4}[\w-]+|ASR\d{3,4}[\w-]*|ISR\d{3,4}[\w/-]*|Catalyst\s?\d{3,4}[\w-]*)\b",
     re.I,
 )
-CISCO_FLAVOR_RE = re.compile(
-    r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.I
-)
+CISCO_FLAVOR_RE = re.compile(r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.I)
 
 # Juniper
 JUNOS_RE = re.compile(r"\bjunos\b", re.I)
 JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.I)
 JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9-]+\.tgz)\b", re.I)
-JUNOS_MODEL_RE = re.compile(
-    r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.I
-)
+JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.I)
 
 # Fortinet
 FORTI_RE = re.compile(r"\bforti(os|gate)\b", re.I)
@@ -44,9 +38,7 @@ FORTI_CHANNEL_RE = re.compile(r"\((GA|Patch|Beta)\)", re.I)
 HUAWEI_RE = re.compile(r"\bhuawei\b|\bvrp\b", re.I)
 HUAWEI_VER_RE = re.compile(r"\bV(\d{3})R(\d{3})C(\d+)(SPC\d+)?\b", re.I)
 HUAWEI_RAWVER_RE = re.compile(r"\bV\d{3}R\d{3}C\d+(?:SPC\d+)?\b", re.I)
-HUAWEI_MODEL_RE = re.compile(
-    r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A-Z-]*)\b", re.I
-)
+HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A-Z-]*)\b", re.I)
 
 # Netgear
 NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.I)
@@ -61,12 +53,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
     t = text
 
     # Vendor detection
-    if (
-        "cisco" in t
-        or CISCO_IOS_XE_RE.search(t)
-        or CISCO_IOS_RE.search(t)
-        or CISCO_NXOS_RE.search(t)
-    ):
+    if "cisco" in t or CISCO_IOS_XE_RE.search(t) or CISCO_IOS_RE.search(t) or CISCO_NXOS_RE.search(t):
         p.vendor = "Cisco"
         p.family = p.family or "network-os"
 
@@ -95,9 +82,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
                     p.version_patch = int(num[2])
                 p.version_build = ver
                 p.precision = (
-                    "patch"
-                    if p.version_patch is not None
-                    else ("minor" if p.version_minor is not None else "major")
+                    "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
                 )
 
         # Image filename
@@ -113,9 +98,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
                 p.version_major = int(m.group(1))
                 p.version_minor = int(m.group(2))
                 p.version_patch = int(m.group(3))
-                p.version_build = (
-                    f"{p.version_major}.{p.version_minor}.{p.version_patch}"
-                )
+                p.version_build = f"{p.version_major}.{p.version_minor}.{p.version_patch}"
                 p.precision = "patch"
 
         # Model
@@ -137,9 +120,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
                 break
 
         # Boost confidence based on precision
-        update_confidence(
-            p, p.precision if p.precision in ("build", "patch") else "minor"
-        )
+        update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
 
     elif JUNOS_RE.search(t):
         p.vendor = "Juniper"
@@ -170,9 +151,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
             p.hw_model = mdl.group(1)
 
         # Boost confidence based on precision
-        update_confidence(
-            p, p.precision if p.precision in ("build", "minor") else "major"
-        )
+        update_confidence(p, p.precision if p.precision in ("build", "minor") else "major")
 
     elif FORTI_RE.search(t):
         p.vendor = "Fortinet"
@@ -192,9 +171,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
                 p.version_patch = int(nums[2])
             p.version_build = v
             p.precision = (
-                "patch"
-                if p.version_patch is not None
-                else ("minor" if p.version_minor is not None else "major")
+                "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
             )
 
         bld = FORTI_BUILD_RE.search(t)
@@ -216,9 +193,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
             p.channel = ch.group(1).upper()
 
         # Boost confidence based on precision
-        update_confidence(
-            p, p.precision if p.precision in ("build", "patch") else "minor"
-        )
+        update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
 
     elif HUAWEI_RE.search(t):
         p.vendor = "Huawei"
@@ -245,9 +220,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
         p.build_id = p.version_build or p.build_id
 
         # Boost confidence based on precision
-        update_confidence(
-            p, p.precision if p.precision in ("minor", "build") else "major"
-        )
+        update_confidence(p, p.precision if p.precision in ("minor", "build") else "major")
 
     elif NETGEAR_RE.search(t):
         p.vendor = "Netgear"
@@ -267,9 +240,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
                 p.version_patch = int(nums[2])
             p.version_build = v
             p.precision = (
-                "patch"
-                if p.version_patch is not None
-                else ("minor" if p.version_minor is not None else "major")
+                "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
             )
 
         mdl = NETGEAR_MODEL_RE.search(t)
