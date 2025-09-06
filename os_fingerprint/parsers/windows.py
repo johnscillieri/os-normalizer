@@ -1,22 +1,20 @@
 """Windows specific parsing logic."""
 
 import re
-from typing import Dict, Any
+from typing import Any
 
-from os_fingerprint.models import OSParse
 from os_fingerprint.helpers import update_confidence
-
+from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the Windows parser
-WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|server|ltsc)\b", re.I)
-WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.I)
-WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.I)
-WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.I)
+WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|server|ltsc)\b", re.IGNORECASE)
+WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
+WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
+WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 
 
-def parse_windows(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with Windows‑specific details.
+def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with Windows‑specific details.
     """
     t = text.lower()
     p.kernel_name = "nt"

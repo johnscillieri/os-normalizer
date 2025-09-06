@@ -1,29 +1,16 @@
 from __future__ import annotations
 
 import re
-from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Tuple, Any
+from typing import Any
 
-# ============================================================
-# Ontology / Seed maps (only those not already in constants.py)
-# ============================================================
-
-# Only keep the constants that are NOT already defined in constants.py:
-# ARCH_SYNONYMS, ALIASES, WINDOWS_BUILD_MAP, WINDOWS_NT_MAP, MACOS_DARWIN_MAP, CISCO_TRAIN_NAMES
-# These are all already in constants.py, so we don't need to duplicate them here
-
-# ============================================================
-# Helpers (only those not already in helpers.py)
-# ============================================================
-
-# Only keep the helper functions that are NOT already in helpers.py:
-# norm_arch, parse_semver_like, precision_from_parts, canonical_key
-# These are all already in helpers.py, so we don't need to duplicate them here
-
-# Architecture extraction from free text (fallback)
-# Only keep ARCH_TEXT_RE that is NOT already in helpers.py
-# This one is duplicated, so we can remove it from here
+from os_fingerprint.models import OSParse
+from os_fingerprint.parsers.bsd import parse_bsd
+from os_fingerprint.parsers.linux import parse_linux
+from os_fingerprint.parsers.macos import parse_macos
+from os_fingerprint.parsers.mobile import parse_mobile
+from os_fingerprint.parsers.network import parse_network
+from os_fingerprint.parsers.windows import parse_windows
 
 PRECISION_ORDER = {
     "build": 6,
@@ -50,8 +37,8 @@ OS_RELEASE_KEYS = {
 }
 
 
-def parse_os_release(blob_text: str) -> Dict[str, Any]:
-    out: Dict[str, Any] = {}
+def parse_os_release(blob_text: str) -> dict[str, Any]:
+    out: dict[str, Any] = {}
     for line in blob_text.splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -68,7 +55,7 @@ def parse_os_release(blob_text: str) -> Dict[str, Any]:
     return out
 
 
-def detect_family(text: str, data: Dict[str, Any]) -> Tuple[Optional[str], float, Dict[str, Any]]:
+def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, dict[str, Any]]:
     t = text.lower()
     ev = {}
     # Obvious network signals first
@@ -131,22 +118,11 @@ def normalize_os(observation: Any) -> Any:
     data = observation.raw_os_json or {}
     t = text.lower()
 
-    # Apply simple aliases (helps macOS)
-    # This is already in constants.py, so we can remove it from here
-    # ALIASES = { ... } (duplicated)
-
-    # Import models here to avoid circular imports
-    from os_fingerprint.models import OSParse, OSObservation
-
     p = OSParse(
         observation_id=observation.observation_id,
         arch=None,  # Will be set by helpers or fallback
         flavor=data.get("flavor"),
     )
-
-    # Fallback arch from raw string if not supplied
-    # ARCH_TEXT_RE and extract_arch_from_text are in helpers.py, so we can remove these
-    # p.arch = extract_arch_from_text(text)
 
     # Family detection
     fam, base_conf, ev = detect_family(t, data)
@@ -154,63 +130,21 @@ def normalize_os(observation: Any) -> Any:
     p.confidence = max(p.confidence, base_conf)
     p.evidence.update(ev)
 
-    # Network vendors (early if detected)
     if fam == "network-os":
-        # Import network parsers here to avoid circular imports
-        from os_fingerprint.parsers.network import parse_network
-
         p = parse_network(text, data, p)
+    elif fam == "windows":
+        p = parse_windows(text, data, p)
+    elif fam == "macos":
+        p = parse_macos(text, data, p)
+    elif fam == "linux":
+        p = parse_linux(text, data, p)
+    elif fam in ("android", "ios"):
+        p = parse_mobile(text, data, p)
+    elif fam == "bsd":
+        p = parse_bsd(text, data, p)
     else:
-        # Desktop/Server branches
-        if fam == "windows":
-            from os_fingerprint.parsers.windows import parse_windows
+        p.precision = "unknown"
 
-            p = parse_windows(text, data, p)
-        elif fam == "macos":
-            from os_fingerprint.parsers.macos import parse_macos
-
-            p = parse_macos(text, data, p)
-        elif fam == "linux":
-            from os_fingerprint.parsers.linux import parse_linux
-
-            p = parse_linux(text, data, p)
-        elif fam in ("android", "ios"):
-            from os_fingerprint.parsers.mobile import parse_mobile
-
-            p = parse_mobile(text, data, p)
-
-        elif fam == "bsd":
-            # For mobile OS, we can also use the generic BSD parser
-            from os_fingerprint.parsers.bsd import parse_bsd
-
-            p = parse_bsd(text, data, p)
-        else:
-            # Try weak hints
-            if "windows" in t:
-                p.family = "windows"
-                from os_fingerprint.parsers.windows import parse_windows
-
-                p = parse_windows(text, data, p)
-            elif "darwin" in t or "macos" in t or "os x" in t:
-                p.family = "macos"
-                from os_fingerprint.parsers.macos import parse_macos
-
-                p = parse_macos(text, data, p)
-            elif "linux" in t:
-                p.family = "linux"
-                from os_fingerprint.parsers.linux import parse_linux
-
-                p = parse_linux(text, data, p)
-            elif any(x in t for x in ["cisco", "junos", "fortios", "vrp", "netgear"]):
-                p.family = "network-os"
-                from os_fingerprint.parsers.network import parse_network
-
-                return normalize_os(observation)  # re-run with family fixed
-            else:
-                p.precision = "unknown"
-
-    # Canonical key (this is in helpers.py, so we can remove it)
-    # p.os_key = canonical_key(p)
     return p
 
 
@@ -219,7 +153,7 @@ def normalize_os(observation: Any) -> Any:
 # ============================================================
 
 
-def choose_best_fact(candidates: List[Any]) -> Any:
+def choose_best_fact(candidates: list[Any]) -> Any:
     if not candidates:
         raise ValueError("No candidates")
     return sorted(
@@ -315,9 +249,18 @@ if __name__ == "__main__":
             now,
             "NETGEAR Firmware V1.0.9.88_10.2.88 R7000",
         ),
+        OSObservation(
+            "10",
+            "hostname",
+            "Mac-Studio.local",
+            "agent-f",
+            now,
+            "Darwin Mac-Studio.local 24.6.0 Darwin Kernel Version 24.6.0: Mon Jul 14 11:30:40 PDT 2025; root:xnu-11417.140.69~1/RELEASE_ARM64_T6041 arm64",
+        ),
     ]
 
     for s in samples:
         parsed = normalize_os(s)
         print("----", s.raw_os_string)
         print(parsed)
+        print("")

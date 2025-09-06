@@ -1,54 +1,52 @@
 """Network gear specific parsing logic."""
 
 import re
-from typing import Dict, Any
+from typing import Any
 
-from os_fingerprint.models import OSParse
 from os_fingerprint.helpers import update_confidence
-
+from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the network parser
 # Cisco
-CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.I)
-CISCO_IOS_RE = re.compile(r"\bios(?!\s?xe)\b", re.I)
-CISCO_NXOS_RE = re.compile(r"\bnx-?os\b|\bNexus Operating System\b", re.I)
-CISCO_VERSION_RE = re.compile(r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.I)
-CISCO_IMAGE_RE = re.compile(r"\b([a-z0-9][a-z0-9_.-]+\.bin)\b", re.I)
+CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.IGNORECASE)
+CISCO_IOS_RE = re.compile(r"\bios(?!\s?xe)\b", re.IGNORECASE)
+CISCO_NXOS_RE = re.compile(r"\bnx-?os\b|\bNexus Operating System\b", re.IGNORECASE)
+CISCO_VERSION_RE = re.compile(r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.IGNORECASE)
+CISCO_IMAGE_RE = re.compile(r"\b([a-z0-9][a-z0-9_.-]+\.bin)\b", re.IGNORECASE)
 CISCO_MODEL_RE = re.compile(
     r"\b(N9K-[A-Z0-9-]+|C\d{3,4}[\w-]+|ASR\d{3,4}[\w-]*|ISR\d{3,4}[\w/-]*|Catalyst\s?\d{3,4}[\w-]*)\b",
-    re.I,
+    re.IGNORECASE,
 )
-CISCO_FLAVOR_RE = re.compile(r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.I)
+CISCO_FLAVOR_RE = re.compile(r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.IGNORECASE)
 
 # Juniper
-JUNOS_RE = re.compile(r"\bjunos\b", re.I)
-JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.I)
-JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9-]+\.tgz)\b", re.I)
-JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.I)
+JUNOS_RE = re.compile(r"\bjunos\b", re.IGNORECASE)
+JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.IGNORECASE)
+JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9-]+\.tgz)\b", re.IGNORECASE)
+JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.IGNORECASE)
 
 # Fortinet
-FORTI_RE = re.compile(r"\bforti(os|gate)\b", re.I)
-FORTI_VER_RE = re.compile(r"\bv?(\d+\.\d+(?:\.\d+)?)\b", re.I)
-FORTI_BUILD_RE = re.compile(r"\bbuild\s?(\d{3,5})\b", re.I)
-FORTI_IMG_RE = re.compile(r"\b(FGT_[0-9.]+-build\d{3,5})\b", re.I)
-FORTI_MODEL_RE = re.compile(r"\b(FortiGate-?\d+[A-Z]?|FG-\d+[A-Z]?)\b", re.I)
-FORTI_CHANNEL_RE = re.compile(r"\((GA|Patch|Beta)\)", re.I)
+FORTI_RE = re.compile(r"\bforti(os|gate)\b", re.IGNORECASE)
+FORTI_VER_RE = re.compile(r"\bv?(\d+\.\d+(?:\.\d+)?)\b", re.IGNORECASE)
+FORTI_BUILD_RE = re.compile(r"\bbuild\s?(\d{3,5})\b", re.IGNORECASE)
+FORTI_IMG_RE = re.compile(r"\b(FGT_[0-9.]+-build\d{3,5})\b", re.IGNORECASE)
+FORTI_MODEL_RE = re.compile(r"\b(FortiGate-?\d+[A-Z]?|FG-\d+[A-Z]?)\b", re.IGNORECASE)
+FORTI_CHANNEL_RE = re.compile(r"\((GA|Patch|Beta)\)", re.IGNORECASE)
 
 # Huawei VRP
-HUAWEI_RE = re.compile(r"\bhuawei\b|\bvrp\b", re.I)
-HUAWEI_VER_RE = re.compile(r"\bV(\d{3})R(\d{3})C(\d+)(SPC\d+)?\b", re.I)
-HUAWEI_RAWVER_RE = re.compile(r"\bV\d{3}R\d{3}C\d+(?:SPC\d+)?\b", re.I)
-HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A-Z-]*)\b", re.I)
+HUAWEI_RE = re.compile(r"\bhuawei\b|\bvrp\b", re.IGNORECASE)
+HUAWEI_VER_RE = re.compile(r"\bV(\d{3})R(\d{3})C(\d+)(SPC\d+)?\b", re.IGNORECASE)
+HUAWEI_RAWVER_RE = re.compile(r"\bV\d{3}R\d{3}C\d+(?:SPC\d+)?\b", re.IGNORECASE)
+HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A-Z-]*)\b", re.IGNORECASE)
 
 # Netgear
-NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.I)
-NETGEAR_VER_RE = re.compile(r"\bV(\d+\.\d+\.\d+(?:_\d+\.\d+\.\d+)?)\b", re.I)
-NETGEAR_MODEL_RE = re.compile(r"\b([RN][0-9]{3,4}[A-Z]?)\b", re.I)
+NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.IGNORECASE)
+NETGEAR_VER_RE = re.compile(r"\bV(\d+\.\d+\.\d+(?:_\d+\.\d+\.\d+)?)\b", re.IGNORECASE)
+NETGEAR_MODEL_RE = re.compile(r"\b([RN][0-9]{3,4}[A-Z]?)\b", re.IGNORECASE)
 
 
-def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with network gear specific details.
+def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with network gear specific details.
     """
     t = text
 
@@ -93,7 +91,7 @@ def parse_network(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
 
         # If NX-OS and we only got version via filename, parse nxos.A.B.C.bin
         if not p.version_major and p.build_id:
-            m = re.search(r"nxos\.(\d+)\.(\d+)\.(\d+)", p.build_id, re.I)
+            m = re.search(r"nxos\.(\d+)\.(\d+)\.(\d+)", p.build_id, re.IGNORECASE)
             if m:
                 p.version_major = int(m.group(1))
                 p.version_minor = int(m.group(2))

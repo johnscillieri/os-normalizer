@@ -1,20 +1,17 @@
 """Mobile device specific parsing logic."""
 
-import re
-from typing import Dict, Any
+from typing import Any
 
-from os_fingerprint.models import OSParse
 from os_fingerprint.helpers import (
-    update_confidence,
     parse_semver_like,
     precision_from_parts,
+    update_confidence,
 )
+from os_fingerprint.models import OSParse
 
 
-def parse_mobile(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with mobile device‑specific details.
-    """
+def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with mobile device‑specific details."""
     t = text.lower()
 
     # Detect if it's iOS or Android

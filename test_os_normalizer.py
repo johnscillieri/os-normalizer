@@ -1,10 +1,10 @@
 import itertools as it
-from datetime import datetime, UTC
-import re
+from datetime import UTC, datetime
+
+from os_fingerprint.models import OSObservation
 
 # Import from the orchestrator module to test the refactored structure
 from os_fingerprint.orchestrator import normalize_os
-from os_fingerprint.models import OSObservation
 
 
 def mk_obs(i, raw, json=None):
@@ -32,10 +32,7 @@ def windows_cases():
         # Fix: Update expectations to match the actual Windows parser behavior
         # Some builds like 19044 are valid for both Windows 10 and 11, so we should expect "Windows 10/11"
         # The parser logic in windows.py correctly handles this
-        if b >= 22000:
-            product = "Windows 11"
-        else:
-            product = "Windows 10"
+        product = "Windows 11" if b >= 22000 else "Windows 10"
 
         expect = {
             "family": "windows",

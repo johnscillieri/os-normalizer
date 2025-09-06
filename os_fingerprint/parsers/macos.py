@@ -1,19 +1,17 @@
 """macOS specific parsing logic."""
 
 import re
-from typing import Dict, Any
+from typing import Any
 
-from os_fingerprint.models import OSParse
 from os_fingerprint.helpers import update_confidence
-
+from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the macOS parser
-DARWIN_RE = re.compile(r"\bdarwin\s?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.I)
+DARWIN_RE = re.compile(r"\bdarwin\s?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.IGNORECASE)
 
 
-def parse_macos(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with macOS‑specific details.
+def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with macOS‑specific details.
     """
     t = text
     p.product = "macOS"
@@ -28,7 +26,6 @@ def parse_macos(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
             if len(parts) == 2 and parts[1].isdigit():
                 p.version_major = int(parts[1])
                 # Use the precision function from helpers to determine precision
-                from os_fingerprint.helpers import precision_from_parts
 
                 p.precision = max(
                     p.precision,
@@ -68,7 +65,7 @@ def parse_macos(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
 
     # Fallback version extraction from text
     if not p.version_major:
-        mm = re.search(r"\bmacos\s?(\d+)(?:\.(\d+))?", t, re.I)
+        mm = re.search(r"\bmacos\s?(\d+)(?:\.(\d+))?", t, re.IGNORECASE)
         if mm:
             p.version_major = int(mm.group(1))
             if mm.group(2):

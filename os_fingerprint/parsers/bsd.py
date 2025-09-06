@@ -1,20 +1,17 @@
 """BSD specific parsing logic."""
 
-import re
-from typing import Dict, Any
+from typing import Any
 
-from os_fingerprint.models import OSParse
 from os_fingerprint.helpers import (
-    update_confidence,
     parse_semver_like,
     precision_from_parts,
+    update_confidence,
 )
+from os_fingerprint.models import OSParse
 
 
-def parse_bsd(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with BSD‑specific details.
-    """
+def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with BSD‑specific details."""
     t = text
 
     # For BSD family, we don't know the specific BSD variant yet

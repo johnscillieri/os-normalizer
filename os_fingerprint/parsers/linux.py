@@ -1,22 +1,19 @@
 """Linux specific parsing logic."""
 
 import re
-from typing import Dict, Any
+from typing import Any
 
+from os_fingerprint.helpers import parse_os_release, update_confidence
 from os_fingerprint.models import OSParse
-from os_fingerprint.helpers import update_confidence, parse_os_release
-
 
 # Regex patterns used only by the Linux parser
-KERNEL_RE = re.compile(r"\b(kernel|uname)\b.*?\b(\d+\.\d+(?:\.\d+)?(?:-\S+)?)", re.I)
+KERNEL_RE = re.compile(r"\b(kernel|uname)\b.*?\b(\d+\.\d+(?:\.\d+)?(?:-\S+)?)", re.IGNORECASE)
 # Looser Linux fallback: "Linux host 5.15.0-122-generic x86_64"
-LINUX_VER_FALLBACK_RE = re.compile(r"\bLinux\b[^\n]*?\b(\d+\.\d+(?:\.\d+)?(?:-[A-Za-z0-9._-]+)?)\b", re.I)
+LINUX_VER_FALLBACK_RE = re.compile(r"\bLinux\b[^\n]*?\b(\d+\.\d+(?:\.\d+)?(?:-[A-Za-z0-9._-]+)?)\b", re.IGNORECASE)
 
 
-def parse_linux(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
-    """
-    Populate an OSParse instance with Linux‑specific details.
-    """
+def parse_linux(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
+    """Populate an OSParse instance with Linux‑specific details."""
     p.kernel_name = "linux"
     osrel = None
     if isinstance(data.get("os_release"), str):

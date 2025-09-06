@@ -1,12 +1,12 @@
 """Utility functions shared across the OS fingerprinting package."""
 
 import re
-from typing import Optional, Tuple, Dict, Any
+from typing import Any
 
 from os_fingerprint.constants import ARCH_SYNONYMS
 
 
-def norm_arch(s: Optional[str]) -> Optional[str]:
+def norm_arch(s: str | None) -> str | None:
     """Normalise an architecture string using ARCH_SYNONYMS."""
     if not s:
         return None
@@ -14,9 +14,8 @@ def norm_arch(s: Optional[str]) -> Optional[str]:
     return ARCH_SYNONYMS.get(a, a)
 
 
-def parse_semver_like(text: str) -> Tuple[Optional[int], Optional[int], Optional[int]]:
-    """
-    Extract up to three integer components from a version‑like string.
+def parse_semver_like(text: str) -> tuple[int | None, int | None, int | None]:
+    """Extract up to three integer components from a version‑like string.
     Returns (major, minor, patch) where missing parts are None.
     """
     m = re.search(r"\b(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", text)
@@ -29,10 +28,10 @@ def parse_semver_like(text: str) -> Tuple[Optional[int], Optional[int], Optional
 
 
 def precision_from_parts(
-    major: Optional[int],
-    minor: Optional[int],
-    patch: Optional[int],
-    build: Optional[str],
+    major: int | None,
+    minor: int | None,
+    patch: int | None,
+    build: str | None,
 ) -> str:
     """Derive a precision label from version components."""
     if build:
@@ -47,8 +46,7 @@ def precision_from_parts(
 
 
 def canonical_key(p: Any) -> str:
-    """
-    Generate a deterministic key for an OSParse instance.
+    """Generate a deterministic key for an OSParse instance.
     The function expects the object to have vendor, product, version_* and edition fields.
     """
     vendor = (p.vendor or "-").lower()
@@ -60,10 +58,10 @@ def canonical_key(p: Any) -> str:
 
 
 # Regex for extracting an architecture token from free‑form text
-ARCH_TEXT_RE = re.compile(r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le)\b", re.I)
+ARCH_TEXT_RE = re.compile(r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le)\b", re.IGNORECASE)
 
 
-def extract_arch_from_text(text: str) -> Optional[str]:
+def extract_arch_from_text(text: str) -> str | None:
     """Fallback architecture extraction from arbitrary text."""
     m = ARCH_TEXT_RE.search(text)
     if not m:
@@ -72,13 +70,12 @@ def extract_arch_from_text(text: str) -> Optional[str]:
     return ARCH_SYNONYMS.get(raw, raw)
 
 
-def parse_os_release(blob_text: str) -> Dict[str, Any]:
-    """
-    Parse the contents of an /etc/os-release style file.
+def parse_os_release(blob_text: str) -> dict[str, Any]:
+    """Parse the contents of an /etc/os-release style file.
     Returns a dict with selected keys (ID, ID_LIKE, PRETTY_NAME, VERSION_ID,
     VERSION_CODENAME).
     """
-    out: Dict[str, Any] = {}
+    out: dict[str, Any] = {}
     for line in blob_text.splitlines():
         line = line.strip()
         if not line or line.startswith("#") or "=" not in line:
@@ -93,8 +90,7 @@ def parse_os_release(blob_text: str) -> Dict[str, Any]:
 
 
 def update_confidence(p: Any, precision: str) -> None:
-    """
-    Boost confidence based on the determined precision level.
+    """Boost confidence based on the determined precision level.
     The mapping mirrors the original ad‑hoc values used throughout the monolithic file.
     """
     boost_map = {

@@ -2,10 +2,9 @@
 
 from __future__ import annotations
 
-import re
 from dataclasses import dataclass, field
 from datetime import datetime
-from typing import Dict, List, Optional, Any
+from typing import Any
 
 
 @dataclass
@@ -17,11 +16,11 @@ class OSObservation:
     asset_anchor_value: str
     source: str
     observed_at: datetime
-    raw_os_string: Optional[str] = None
-    raw_os_json: Optional[Dict[str, Any]] = None
-    agent_version: Optional[str] = None
-    collection_method: Optional[str] = None
-    hash: Optional[str] = None
+    raw_os_string: str | None = None
+    raw_os_json: dict[str, Any] | None = None
+    agent_version: str | None = None
+    collection_method: str | None = None
+    hash: str | None = None
 
 
 @dataclass
@@ -31,36 +30,36 @@ class OSParse:
     observation_id: str
 
     # Core identity
-    family: Optional[str] = None  # windows, linux, macos, ios, android, bsd, network-os
-    vendor: Optional[str] = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
-    product: Optional[str] = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
-    edition: Optional[str] = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
-    codename: Optional[str] = None  # Sequoia; Ubuntu codename; Cisco train
-    channel: Optional[str] = None  # LTS/Beta/GA/R3‑S3 etc.
+    family: str | None = None  # windows, linux, macos, ios, android, bsd, network-os
+    vendor: str | None = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
+    product: str | None = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
+    edition: str | None = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
+    codename: str | None = None  # Sequoia; Ubuntu codename; Cisco train
+    channel: str | None = None  # LTS/Beta/GA/R3‑S3 etc.
 
     # Versions
-    version_major: Optional[int] = None
-    version_minor: Optional[int] = None
-    version_patch: Optional[int] = None
-    version_build: Optional[str] = None  # Windows build; network image tag
+    version_major: int | None = None
+    version_minor: int | None = None
+    version_patch: int | None = None
+    version_build: str | None = None  # Windows build; network image tag
 
     # Kernel / image details
-    kernel_name: Optional[str] = None
-    kernel_version: Optional[str] = None
-    arch: Optional[str] = None
-    flavor: Optional[str] = None  # desktop/server/mobile/firewall/router/switch
-    distro: Optional[str] = None
-    like_distros: List[str] = field(default_factory=list)
-    pretty_name: Optional[str] = None
+    kernel_name: str | None = None
+    kernel_version: str | None = None
+    arch: str | None = None
+    flavor: str | None = None  # desktop/server/mobile/firewall/router/switch
+    distro: str | None = None
+    like_distros: list[str] = field(default_factory=list)
+    pretty_name: str | None = None
 
     # Network device extras
-    hw_model: Optional[str] = None
-    build_id: Optional[str] = None
+    hw_model: str | None = None
+    build_id: str | None = None
 
     # Meta information
     precision: str = "unknown"  # family|product|major|minor|patch|build
     confidence: float = 0.0
-    evidence: Dict[str, Any] = field(default_factory=dict)
+    evidence: dict[str, Any] = field(default_factory=dict)
 
     # Canonical key for deduplication / indexing
-    os_key: Optional[str] = None
+    os_key: str | None = None
