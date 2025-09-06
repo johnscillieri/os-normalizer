@@ -100,7 +100,7 @@ def linux_cases():
     ]
     i = 1400
     for blob, prod in osrels:
-        s = f"Linux host 5.15.0-122-generic x86_64"
+        s = "Linux host 5.15.0-122-generic x86_64"
         json = {"arch": "x86_64", "os_release": blob}
         i += 1
         yield (
@@ -173,7 +173,7 @@ def juniper_cases():
 
 def fortinet_cases():
     i = 2200
-    models = ["FortiGate-100F", "FG-60E", "FortiGate-200E", "FG-80F"]
+    models = ["FortiGate-100F", "FortiGate-60E FGT60E", "FortiGate-200E", "FortiGate-80F FGT80F"]
     vers = [
         ("7.2.7", "1600", "GA"),
         ("7.0.13", "1520", "Patch"),

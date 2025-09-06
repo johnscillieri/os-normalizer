@@ -68,9 +68,7 @@ def parse_os_release(blob_text: str) -> Dict[str, Any]:
     return out
 
 
-def detect_family(
-    text: str, data: Dict[str, Any]
-) -> Tuple[Optional[str], float, Dict[str, Any]]:
+def detect_family(text: str, data: Dict[str, Any]) -> Tuple[Optional[str], float, Dict[str, Any]]:
     t = text.lower()
     ev = {}
     # Obvious network signals first
@@ -81,7 +79,6 @@ def detect_family(
             "nx-os",
             "ios xe",
             "ios-xe",
-            "ios ",
             "junos",
             "fortios",
             "fortigate",
@@ -91,22 +88,19 @@ def detect_family(
             "firmware v",
         ]
     ):
+        # Special handling for 'ios' - if it's just 'ios' without 'cisco', treat as mobile, not network
+        if "ios " in t and "cisco" not in t:
+            ev["hit"] = "ios"
+            return "ios", 0.6, ev
+
         ev["hit"] = "network-os"
         return "network-os", 0.7, ev
     # Linux
-    if "linux" in t or any(
-        k in data
-        for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")
-    ):
+    if "linux" in t or any(k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")):
         ev["hit"] = "linux"
         return "linux", 0.6, ev
     # Windows
-    if (
-        "windows" in t
-        or "nt " in t
-        or "build" in t
-        or data.get("os", "").lower() == "windows"
-    ):
+    if "windows" in t or "nt " in t or data.get("os", "").lower() == "windows":
         ev["hit"] = "windows"
         return "windows", 0.6, ev
     # Apple
@@ -180,9 +174,12 @@ def normalize_os(observation: Any) -> Any:
             from os_fingerprint.parsers.linux import parse_linux
 
             p = parse_linux(text, data, p)
-        elif fam in ("android", "ios", "bsd"):
+        elif fam in ("android", "ios"):
             from os_fingerprint.parsers.mobile import parse_mobile
 
+            p = parse_mobile(text, data, p)
+
+        elif fam == "bsd":
             # For mobile OS, we can also use the generic BSD parser
             from os_fingerprint.parsers.bsd import parse_bsd
 

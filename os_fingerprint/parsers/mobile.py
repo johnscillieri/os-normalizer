@@ -15,7 +15,7 @@ def parse_mobile(text: str, data: Dict[str, Any], p: OSParse) -> OSParse:
     """
     Populate an OSParse instance with mobile device‑specific details.
     """
-    t = text
+    t = text.lower()
 
     # Detect if it's iOS or Android
     if "ios" in t or "ipados" in t:
