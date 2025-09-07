@@ -11,14 +11,12 @@ from os_fingerprint.models import OSParse
 
 
 def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with BSD‑specific details."""
-    t = text
-
+    """Populate an OSParse instance with BSD-specific details."""
     # For BSD family, we don't know the specific BSD variant yet
     p.product = "BSD"
 
     # Extract version info using semver-like parsing
-    x, y, z = parse_semver_like(t)
+    x, y, z = parse_semver_like(text)
     p.version_major, p.version_minor, p.version_patch = x, y, z
     p.precision = precision_from_parts(x, y, z, None) if x else "family"
 

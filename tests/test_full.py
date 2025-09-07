@@ -24,6 +24,21 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
             evidence={"hit": "windows", "nt_version": "10.0"},
         ),
     ),
+    # macOS — alias-only (no Darwin)
+    (
+        "macOS Sequoia",
+        None,
+        OSParse(
+            family="macos",
+            vendor="Apple",
+            product="macOS",
+            codename="Sequoia",
+            version_major=15,
+            precision="major",
+            confidence=0.7,
+            evidence={"hit": "macos"},
+        ),
+    ),
     # Windows — NT 6.1, SP2, x86 (client)
     (
         "Windows NT 6.1 Build 7601 SP2 x86",
@@ -40,6 +55,40 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
             precision="build",
             confidence=0.85,
             evidence={"hit": "windows", "nt_version": "6.1", "service_pack": "SP2"},
+        ),
+    ),
+    # Linux — kernel-only, no os-release
+    (
+        "Linux node 6.5.7-arch1-1",
+        None,
+        OSParse(
+            family="linux",
+            vendor=None,
+            product="Linux",
+            kernel_name="linux",
+            kernel_version="6.5.7-arch1-1",
+            precision="family",
+            confidence=0.6,
+            evidence={"hit": "linux"},
+        ),
+    ),
+    # Linux — dict-based os_release
+    (
+        "Linux host 5.4.0-70-generic",
+        {"os_release": {"NAME": "Fedora Linux", "ID": "fedora", "VERSION_ID": "33"}},
+        OSParse(
+            family="linux",
+            vendor="Fedora Project",
+            product="Fedora Linux",
+            version_major=33,
+            kernel_name="linux",
+            kernel_version="5.4.0-70-generic",
+            distro="fedora",
+            like_distros=[],
+            pretty_name="Fedora Linux",
+            precision="major",
+            confidence=0.7,
+            evidence={"hit": "linux"},
         ),
     ),
     # Windows — NT 6.1 Server Datacenter (server detection)

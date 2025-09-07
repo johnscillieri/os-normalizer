@@ -1,4 +1,4 @@
-"""macOS specific parsing logic."""
+"""macOS specific parsing logic (refactored)."""
 
 import re
 from typing import Any
@@ -8,75 +8,104 @@ from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the macOS parser
-DARWIN_RE = re.compile(r"\bdarwin\b[^\d\n]*?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.IGNORECASE)
+DARWIN_RE = re.compile(
+    r"\bdarwin\b[^\d\n]*?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b",
+    re.IGNORECASE,
+)
+MACOS_VER_FALLBACK_RE = re.compile(r"\bmacos\s?(\d+)(?:\.(\d+))?", re.IGNORECASE)
+
+# Local precision order for simple comparisons
+_PRECISION_ORDER = {"family": 0, "product": 1, "major": 2, "minor": 3, "patch": 4, "build": 5}
 
 
 def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     """Populate an OSParse instance with macOS-specific details."""
     t = text
-    p.product = "macOS"
-    p.vendor = "Apple"
+    tl = t.lower()
 
+    # Base identity
+    p.product = p.product or "macOS"
+    p.vendor = p.vendor or "Apple"
+
+    # 1) Alias-based version hints (e.g., "Sequoia" -> macOS 15)
+    _apply_alias_hint(tl, p)
+
+    # 2) Darwin kernel mapping to macOS version/codename
+    _apply_darwin_mapping(t, p)
+
+    # 3) Fallback: parse "macOS <ver>" from text
+    _apply_version_fallback(t, p)
+
+    # 4) Fallback: detect codename from text if still missing
+    _apply_codename_fallback(tl, p)
+
+    # Confidence boost based on precision
+    update_confidence(p, p.precision)
+    return p
+
+
+def _apply_alias_hint(tl: str, p: OSParse) -> None:
     for alias, normalized in MACOS_ALIASES.items():
-        if alias in t:
+        if alias in tl:
             parts = normalized.split()
             if len(parts) == 2 and parts[1].isdigit():
                 p.version_major = int(parts[1])
-                p.precision = "major"
+                p.precision = _max_precision(p.precision, "major")
 
-    # Darwin version
+
+def _apply_darwin_mapping(t: str, p: OSParse) -> None:
     m = DARWIN_RE.search(t)
-    if m:
-        dmaj = int(m.group(1))
-        p.kernel_name = "darwin"
-        p.kernel_version = ".".join([g for g in m.groups() if g])
+    if not m:
+        return
+    dmaj = int(m.group(1))
+    p.kernel_name = "darwin"
+    p.kernel_version = ".".join([g for g in m.groups() if g])
 
-        if dmaj in MACOS_DARWIN_MAP:
-            prod, ver, code = MACOS_DARWIN_MAP[dmaj]
-            p.product = prod
-            if ver.isdigit():
-                p.version_major = int(ver)
-                p.precision = "major"
-            else:
-                x, y, *z = ver.split(".")
-                p.version_major = int(x)
-                p.version_minor = int(y)
-                p.precision = "minor"
+    if dmaj in MACOS_DARWIN_MAP:
+        prod, ver, code = MACOS_DARWIN_MAP[dmaj]
+        p.product = prod
+        if ver.isdigit():
+            p.version_major = int(ver)
+            p.precision = _max_precision(p.precision, "major")
+        else:
+            x, y, *_ = ver.split(".")
+            p.version_major = int(x)
+            p.version_minor = int(y)
+            p.precision = _max_precision(p.precision, "minor")
+        p.codename = code
+
+
+def _apply_version_fallback(t: str, p: OSParse) -> None:
+    if p.version_major:
+        return
+    mm = MACOS_VER_FALLBACK_RE.search(t)
+    if not mm:
+        return
+    p.version_major = int(mm.group(1))
+    if mm.group(2):
+        p.version_minor = int(mm.group(2))
+        p.precision = _max_precision(p.precision, "minor")
+    else:
+        p.precision = _max_precision(p.precision, "major")
+
+
+def _apply_codename_fallback(tl: str, p: OSParse) -> None:
+    if p.codename:
+        return
+    for dmaj, (_, ver, code) in MACOS_DARWIN_MAP.items():
+        if code.lower() in tl:
             p.codename = code
+            # Provide at least major version from the map
+            if isinstance(ver, str) and ver.isdigit():
+                p.version_major = int(ver)
+                p.precision = _max_precision(p.precision, "major")
+            elif isinstance(ver, str) and "." in ver:
+                x, *_ = ver.split(".")
+                if x.isdigit():
+                    p.version_major = int(x)
+                    p.precision = _max_precision(p.precision, "major")
+            break
 
-    # Fallback version extraction from text
-    if not p.version_major:
-        mm = re.search(r"\bmacos\s?(\d+)(?:\.(\d+))?", t, re.IGNORECASE)
-        if mm:
-            p.version_major = int(mm.group(1))
-            if mm.group(2):
-                p.version_minor = int(mm.group(2))
-                p.precision = "minor"
-            else:
-                p.precision = "major"
 
-    # Fallback codename from text
-    if not p.codename:
-        for dmaj, (_, _, code) in MACOS_DARWIN_MAP.items():
-            if code.lower() in t:
-                p.codename = code
-                ver = MACOS_DARWIN_MAP[dmaj][1]
-                if ver.isdigit():
-                    p.version_major = int(ver)
-                    p.precision = max(
-                        p.precision,
-                        "major",
-                        key=lambda x: {
-                            "family": 0,
-                            "product": 1,
-                            "major": 2,
-                            "minor": 3,
-                            "patch": 4,
-                            "build": 5,
-                        }[x],
-                    )  # type: ignore
-
-    # Boost confidence based on precision
-    update_confidence(p, p.precision)
-
-    return p
+def _max_precision(current: str, new_label: str) -> str:
+    return new_label if _PRECISION_ORDER.get(new_label, 0) > _PRECISION_ORDER.get(current, 0) else current
