@@ -15,7 +15,8 @@ def norm_arch(s: str | None) -> str | None:
 
 
 def parse_semver_like(text: str) -> tuple[int | None, int | None, int | None]:
-    """Extract up to three integer components from a version‑like string.
+    """Extract up to three integer components from a version-like string.
+
     Returns (major, minor, patch) where missing parts are None.
     """
     m = re.search(r"\b(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", text)
@@ -47,6 +48,7 @@ def precision_from_parts(
 
 def canonical_key(p: Any) -> str:
     """Generate a deterministic key for an OSParse instance.
+
     The function expects the object to have vendor, product, version_* and edition fields.
     """
     vendor = (p.vendor or "-").lower()
@@ -72,15 +74,15 @@ def extract_arch_from_text(text: str) -> str | None:
 
 def parse_os_release(blob_text: str) -> dict[str, Any]:
     """Parse the contents of an /etc/os-release style file.
-    Returns a dict with selected keys (ID, ID_LIKE, PRETTY_NAME, VERSION_ID,
-    VERSION_CODENAME).
+
+    Returns a dict with selected keys (ID, ID_LIKE, PRETTY_NAME, VERSION_ID, VERSION_CODENAME).
     """
     out: dict[str, Any] = {}
     for line in blob_text.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
+        clean = line.strip()
+        if not clean or clean.startswith("#") or "=" not in clean:
             continue
-        k, v = line.split("=", 1)
+        k, v = clean.split("=", 1)
         k = k.strip().upper()
         if k == "ID_LIKE":
             out[k] = [s.strip().lower() for s in re.split(r"[ ,]+", v.strip("\"'").strip()) if s]
@@ -91,6 +93,7 @@ def parse_os_release(blob_text: str) -> dict[str, Any]:
 
 def update_confidence(p: Any, precision: str) -> None:
     """Boost confidence based on the determined precision level.
+
     The mapping mirrors the original ad‑hoc values used throughout the monolithic file.
     """
     boost_map = {

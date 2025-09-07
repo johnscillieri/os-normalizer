@@ -5,20 +5,7 @@ from typing import Any
 
 import pytest
 
-from os_fingerprint.models import OSObservation
 from os_fingerprint.orchestrator import normalize_os
-
-
-def mk_obs(i: int, raw: str, json_data: dict[str, Any] | None = None):
-    return OSObservation(
-        str(i),
-        "hostname",
-        f"host-{i:03d}",
-        "test",
-        datetime.now(UTC),
-        raw,
-        json_data or {},
-    )
 
 
 # ----------------------------------------------------------------------
@@ -325,7 +312,8 @@ def create_test_parameters() -> list:
     for i, (raw, exp) in enumerate(WINDOWS_CASES):
         test_cases.append(
             pytest.param(
-                mk_obs(1000 + i, raw),
+                raw,
+                None,
                 exp,
                 id=f"win_{i:02d}_{safe_id(raw)}",
             )
@@ -335,7 +323,8 @@ def create_test_parameters() -> list:
     for i, (raw, exp) in enumerate(MACOS_CASES):
         test_cases.append(
             pytest.param(
-                mk_obs(2000 + i, raw),
+                raw,
+                None,
                 exp,
                 id=f"mac_{i:02d}_{safe_id(raw)}",
             )
@@ -345,13 +334,13 @@ def create_test_parameters() -> list:
     for i, entry in enumerate(LINUX_CASES):
         if len(entry) == 2:
             raw, exp = entry
-            json_data = {}
+            data = {}
         else:
-            raw, exp, json_data = entry
-        obs = mk_obs(3000 + i, raw, json_data)
+            raw, exp, data = entry
         test_cases.append(
             pytest.param(
-                obs,
+                raw,
+                data,
                 exp,
                 id=f"lin_{i:02d}_{safe_id(raw)}",
             )
@@ -361,7 +350,8 @@ def create_test_parameters() -> list:
     for i, (raw, exp) in enumerate(MOBILE_BSD_CASES):
         test_cases.append(
             pytest.param(
-                mk_obs(4000 + i, raw),
+                raw,
+                None,
                 exp,
                 id=f"mob_{i:02d}_{safe_id(raw)}",
             )
@@ -371,7 +361,8 @@ def create_test_parameters() -> list:
     for i, (raw, exp) in enumerate(NETWORK_OS_CASES):
         test_cases.append(
             pytest.param(
-                mk_obs(5000 + i, raw),
+                raw,
+                None,
                 exp,
                 id=f"net_{i:02d}_{safe_id(raw)}",
             )
@@ -385,8 +376,8 @@ def create_test_parameters() -> list:
 # ----------------------------------------------------------------------
 
 
-@pytest.mark.parametrize(("obs", "expected"), create_test_parameters())
-def test_static_os_fingerprinting(obs: OSObservation, expected: dict[str, Any]) -> None:
+@pytest.mark.parametrize(("text", "data", "expected"), create_test_parameters())
+def test_static_os_fingerprinting(text: str, data: dict | None, expected: dict[str, Any]) -> None:
     """Test that raw OS strings are correctly normalized into structured fingerprints.
 
     Each case includes:
@@ -395,35 +386,33 @@ def test_static_os_fingerprinting(obs: OSObservation, expected: dict[str, Any]) 
 
     On failure, detailed context is shown.
     """
-    result = normalize_os(obs)
+    result = normalize_os(text, data)
 
     # Always check family
     assert result.family == expected["family"], (
-        f"Input: '{obs.raw_os_string}' - Expected family='{expected['family']}', got '{result.family}'"
+        f"Input: '{text}' - Expected family='{expected['family']}', got '{result.family}'"
     )
 
     # Optional checks with helpful messages
     if "vendor" in expected:
         exp_vendor = (expected["vendor"] or "").lower()
         act_vendor = (result.vendor or "").lower()
-        assert act_vendor == exp_vendor, (
-            f"Input: '{obs.raw_os_string}' - Expected vendor='{exp_vendor}', got '{act_vendor}'"
-        )
+        assert act_vendor == exp_vendor, f"Input: '{text}' - Expected vendor='{exp_vendor}', got '{act_vendor}'"
 
     if "product" in expected:
         exp_prod = (expected["product"] or "").lower()
         act_prod = (result.product or "").lower()
-        assert act_prod == exp_prod, f"Input: '{obs.raw_os_string}' - Expected product='{exp_prod}', got '{act_prod}'"
+        assert act_prod == exp_prod, f"Input: '{text}' - Expected product='{exp_prod}', got '{act_prod}'"
 
     if "precision" in expected:
         assert result.precision == expected["precision"], (
-            f"Input: '{obs.raw_os_string}' - Expected precision='{expected['precision']}', got '{result.precision}'"
+            f"Input: '{text}' - Expected precision='{expected['precision']}', got '{result.precision}'"
         )
 
     # Confidence checks (only if precision provided)
     prec = expected.get("precision")
     if prec == "build":
-        assert result.confidence >= 0.8, f"Input: '{obs.raw_os_string}' - build-level match should have high confidence"
+        assert result.confidence >= 0.8, f"Input: '{text}' - build-level match should have high confidence"
     elif prec == "product":
         assert result.confidence >= 0.6
     elif prec == "family":

@@ -11,13 +11,17 @@ from os_fingerprint.models import OSParse
 CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.IGNORECASE)
 CISCO_IOS_RE = re.compile(r"\bios(?!\s?xe)\b", re.IGNORECASE)
 CISCO_NXOS_RE = re.compile(r"\bnx-?os\b|\bNexus Operating System\b", re.IGNORECASE)
-CISCO_VERSION_RE = re.compile(r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.IGNORECASE)
+CISCO_VERSION_RE = re.compile(
+    r"\bVersion\s+([0-9]+\.[0-9.()a-zA-Z]+)\b|\bnxos\.(\d+\.\d+(?:\.\d+|\(\d+\)))", re.IGNORECASE
+)
 CISCO_IMAGE_RE = re.compile(r"\b([a-z0-9][a-z0-9_.-]+\.bin)\b", re.IGNORECASE)
 CISCO_MODEL_RE = re.compile(
     r"\b(N9K-[A-Z0-9-]+|C\d{3,4}[\w-]+|ASR\d{3,4}[\w-]*|ISR\d{3,4}[\w/-]*|Catalyst\s?\d{3,4}[\w-]*)\b",
     re.IGNORECASE,
 )
-CISCO_FLAVOR_RE = re.compile(r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.IGNORECASE)
+CISCO_EDITION_RE = re.compile(
+    r"\b(universalk9|ipbase|adv(ip)?services|metroipaccess|securityk9|datak9)\b", re.IGNORECASE
+)
 
 # Juniper
 JUNOS_RE = re.compile(r"\bjunos\b", re.IGNORECASE)
@@ -46,8 +50,7 @@ NETGEAR_MODEL_RE = re.compile(r"\b([RN][0-9]{3,4}[A-Z]?)\b", re.IGNORECASE)
 
 
 def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with network gear specific details.
-    """
+    """Populate an OSParse instance with network gear specific details."""
     t = text
 
     # Vendor detection
@@ -104,8 +107,8 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         if mm:
             p.hw_model = mm.group(1)
 
-        # Flavor (universalk9/ipbase)
-        fl = CISCO_FLAVOR_RE.search(t)
+        # Edition (universalk9/ipbase)
+        fl = CISCO_EDITION_RE.search(t)
         if fl:
             p.edition = fl.group(1).lower()
 

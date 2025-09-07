@@ -3,33 +3,12 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING, Any
-
-if TYPE_CHECKING:
-    from datetime import datetime
-
-
-@dataclass
-class OSObservation:
-    """Raw observation data supplied to the normalizer."""
-
-    observation_id: str
-    asset_anchor_kind: str
-    asset_anchor_value: str
-    source: str
-    observed_at: datetime
-    raw_os_string: str | None = None
-    raw_os_json: dict[str, Any] | None = None
-    agent_version: str | None = None
-    collection_method: str | None = None
-    hash: str | None = None
+from typing import Any
 
 
 @dataclass
 class OSParse:
     """Structured representation of a parsed operating system."""
-
-    observation_id: str
 
     # Core identity
     family: str | None = None  # windows, linux, macos, ios, android, bsd, network-os
@@ -49,7 +28,6 @@ class OSParse:
     kernel_name: str | None = None
     kernel_version: str | None = None
     arch: str | None = None
-    flavor: str | None = None  # desktop/server/mobile/firewall/router/switch
     distro: str | None = None
     like_distros: list[str] = field(default_factory=list)
     pretty_name: str | None = None

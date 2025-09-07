@@ -1,19 +1,13 @@
 import itertools as it
 from datetime import UTC, datetime
 
-from os_fingerprint.models import OSObservation
-
 # Import from the orchestrator module to test the refactored structure
 from os_fingerprint.orchestrator import normalize_os
 
 
 def mk_obs(i, raw, json=None):
-    return OSObservation(
-        str(i),
-        "hostname",
-        f"host-{i:03d}",
-        "test",
-        datetime.now(UTC),
+    return (
+        i,
         raw,
         json or {},
     )
@@ -102,7 +96,7 @@ def linux_cases():
         i += 1
         yield (
             mk_obs(i, s, json),
-            {"family": "linux", "product": prod if prod != "Red" else "Red"},
+            {"family": "linux", "product": prod},
         )
 
     # Add a batch of kernel-only signals
@@ -130,8 +124,8 @@ def cisco_cases():
     # IOS XE Amsterdam 17.9.x on C9300
     versions = ["17.9.1a", "17.9.3", "17.9.4a", "17.6.5"]
     models = ["C9300-24T", "C9300-48P"]
-    flavors = ["universalk9", "ipbase"]
-    for v, m, f in it.product(versions, models, flavors):
+    editions = ["universalk9", "ipbase"]
+    for v, m, f in it.product(versions, models, editions):
         i += 1
         s = f"Cisco IOS XE Software, Version {v} (Amsterdam) {m}, {f}, c9300-{f}.{v.replace('.', '.').replace('a', '.a')}.SPA.bin"
         yield (
@@ -244,7 +238,7 @@ def test_bulk_parsing_200_plus():
     cases = list(all_cases())
     ok = 0
     for obs, exp in cases:
-        p = normalize_os(obs)
+        p = normalize_os(obs[1], obs[2])
         # print(f"\n{obs}\n vs \n{p}")
         # Required expectations: family + (vendor/product if provided)
         assert p.family == exp["family"]

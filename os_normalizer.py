@@ -1,7 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from os_fingerprint.models import OSObservation, OSParse
+from os_fingerprint.models import OSParse
 from os_fingerprint.parsers.bsd import parse_bsd
 from os_fingerprint.parsers.linux import parse_linux
 from os_fingerprint.parsers.macos import parse_macos
@@ -81,16 +81,12 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
 # ============================================================
 
 
-def normalize_os(observation: OSObservation) -> OSParse:
-    text = (observation.raw_os_string or "").strip()
-    data = observation.raw_os_json or {}
+def normalize_os(text: str, data: dict | None) -> OSParse:
+    text = text.strip()
+    data = data or {}
     t = text.lower()
 
-    p = OSParse(
-        observation_id=observation.observation_id,
-        arch=None,  # Will be set by helpers or fallback
-        flavor=data.get("flavor"),
-    )
+    p = OSParse()
 
     # Family detection
     fam, base_conf, ev = detect_family(t, data)
@@ -136,99 +132,45 @@ def choose_best_fact(candidates: list[OSParse]) -> OSParse:
 # ============================================================
 
 if __name__ == "__main__":
-    # Import the OSObservation class for the test cases
-    from os_fingerprint.models import OSObservation
-
     now = datetime.now(tz=UTC)
     samples = [
-        OSObservation(
-            "1",
-            "hostname",
-            "pc-01",
-            "agent-a",
-            now,
-            "Windows NT 10.0 build 22631 Enterprise x64",
-        ),
-        OSObservation(
-            "2",
-            "hostname",
-            "mac-01",
-            "agent-b",
-            now,
-            "Darwin 24.0.0; macOS Sequoia arm64",
-        ),
-        OSObservation(
-            "3",
-            "hostname",
-            "lin-01",
-            "agent-c",
-            now,
-            "Linux host 5.15.0-122-generic x86_64",
-            {
-                "arch": None,
+        {
+            "text": "Windows NT 10.0 build 22631 Enterprise x64",
+        },
+        {
+            "text": "Darwin 24.0.0; macOS Sequoia arm64",
+        },
+        {
+            "text": "Linux host 5.15.0-122-generic x86_64",
+            "data": {
                 "os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy\nPRETTY_NAME="Ubuntu 22.04.4 LTS"',
             },
-        ),
-        OSObservation(
-            "4",
-            "hostname",
-            "sw-01",
-            "agent-d",
-            now,
-            "Cisco IOS XE Software, Version 17.9.4a (Amsterdam) C9300-24T, universalk9, c9300-universalk9.17.09.04a.SPA.bin",
-        ),
-        OSObservation(
-            "5",
-            "hostname",
-            "fw-01",
-            "agent-e",
-            now,
-            "FortiGate-100F v7.2.7 build1600 (GA) FGT_7.2.7-build1600",
-        ),
-        OSObservation(
-            "6",
-            "hostname",
-            "sw-02",
-            "agent-f",
-            now,
-            "Cisco Nexus Operating System (NX-OS) Software nxos.9.3.5.bin N9K-C93180YC-FX",
-        ),
-        OSObservation(
-            "7",
-            "hostname",
-            "ex-01",
-            "agent-g",
-            now,
-            "Junos: 20.4R3-S3 jinstall-ex-4300-20.4R3-S3.tgz EX4300-48T",
-        ),
-        OSObservation(
-            "8",
-            "hostname",
-            "ce-01",
-            "agent-h",
-            now,
-            "Huawei VRP V800R012C00SPC500 S5720-28X-SI-AC",
-        ),
-        OSObservation(
-            "9",
-            "hostname",
-            "ap-01",
-            "agent-i",
-            now,
-            "NETGEAR Firmware V1.0.9.88_10.2.88 R7000",
-        ),
-        OSObservation(
-            "10",
-            "hostname",
-            "Mac-Studio.local",
-            "agent-f",
-            now,
-            "Darwin Mac-Studio.local 24.6.0 Darwin Kernel Version 24.6.0: Mon Jul 14 11:30:40 PDT 2025; root:xnu-11417.140.69~1/RELEASE_ARM64_T6041 arm64",
-        ),
+        },
+        {
+            "text": "Cisco IOS XE Software, Version 17.9.4a (Amsterdam) C9300-24T, universalk9, c9300-universalk9.17.09.04a.SPA.bin",
+        },
+        {
+            "text": "FortiGate-100F v7.2.7 build1600 (GA) FGT_7.2.7-build1600",
+        },
+        {
+            "text": "Cisco Nexus Operating System (NX-OS) Software nxos.9.3.5.bin N9K-C93180YC-FX",
+        },
+        {
+            "text": "Junos: 20.4R3-S3 jinstall-ex-4300-20.4R3-S3.tgz EX4300-48T",
+        },
+        {
+            "text": "Huawei VRP V800R012C00SPC500 S5720-28X-SI-AC",
+        },
+        {
+            "text": "NETGEAR Firmware V1.0.9.88_10.2.88 R7000",
+        },
+        {
+            "text": "Darwin Mac-Studio.local 24.6.0 Darwin Kernel Version 24.6.0: Mon Jul 14 11:30:40 PDT 2025; root:xnu-11417.140.69~1/RELEASE_ARM64_T6041 arm64",
+        },
     ]
 
     for s in samples:
-        parsed = normalize_os(s)
-        print("----", s.raw_os_string)
+        parsed = normalize_os(text=s.get("text"), data=s.get("data"))
+        print("----", s.get("text"))
         print(parsed)
         print()
