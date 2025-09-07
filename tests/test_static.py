@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from os_normalizer import normalize_os
+from os_fingerprint import normalize_os
 
 # ----------------------------------------------------------------------
 # Test Cases Grouped by OS Family (Clean & Readable)

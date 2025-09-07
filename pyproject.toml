@@ -27,6 +27,12 @@ ignore = [
     "D213",
     "D400",
     "D415",
+    "S101",
     "T201",
     "COM812",
 ]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["."]
+addopts = "-q"

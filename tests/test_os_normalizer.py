@@ -1,6 +1,6 @@
 import itertools as it
 
-from os_normalizer import normalize_os
+from os_fingerprint import normalize_os
 
 
 def mk_obs(i, raw, json=None):
