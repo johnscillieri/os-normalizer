@@ -14,7 +14,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
             vendor="Microsoft",
             product="Windows 11",
             edition="Enterprise",
-            channel="22H2",
+            channel="23H2",
             version_build="22631",
             kernel_name="nt",
             kernel_version="10.0.22631",
@@ -24,7 +24,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
             evidence={"hit": "windows", "nt_version": "10.0"},
         ),
     ),
-    # Windows — NT 6.1, SP2, x86
+    # Windows — NT 6.1, SP2, x86 (client)
     (
         "Windows NT 6.1 Build 7601 SP2 x86",
         None,
@@ -40,6 +40,24 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
             precision="build",
             confidence=0.85,
             evidence={"hit": "windows", "nt_version": "6.1", "service_pack": "SP2"},
+        ),
+    ),
+    # Windows — NT 6.1 Server Datacenter (server detection)
+    (
+        "Windows NT 6.1 Build 7601 Server Datacenter x64",
+        None,
+        OSParse(
+            family="windows",
+            vendor="Microsoft",
+            product="Windows Server 2008 R2",
+            edition="Datacenter",
+            version_build="7601",
+            kernel_name="nt",
+            kernel_version=None,
+            arch="x86_64",
+            precision="build",
+            confidence=0.85,
+            evidence={"hit": "windows", "nt_version": "6.1"},
         ),
     ),
     # macOS — Darwin 24 => Sequoia (15), arm64

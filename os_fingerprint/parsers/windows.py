@@ -3,12 +3,16 @@
 import re
 from typing import Any
 
-from os_fingerprint.constants import WINDOWS_BUILD_MAP, WINDOWS_NT_MAP
+from os_fingerprint.constants import (
+    WINDOWS_BUILD_MAP,
+    WINDOWS_NT_CLIENT_MAP,
+    WINDOWS_NT_SERVER_MAP,
+)
 from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the Windows parser
-WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|server|ltsc|datacenter)\b", re.IGNORECASE)
+WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|ltsc|datacenter)\b", re.IGNORECASE)
 WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
@@ -67,11 +71,28 @@ def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     if nt:
         major, minor = int(nt.group(1)), int(nt.group(2))
         p.evidence["nt_version"] = f"{major}.{minor}"
+        # Decide if this looks like a Server SKU
+        server_like = any(
+            kw in t
+            for kw in (
+                "server",
+                "datacenter",
+                "standard",
+                "essentials",
+                "foundation",
+                "core",  # server core often appears
+                "hyper-v",
+            )
+        )
 
-        # Map coarse NT version to a generic product name if not already set
-        product = WINDOWS_NT_MAP.get((major, minor))
-        if product and (not p.product or p.product == "Windows"):
-            p.product = product
+        # Map coarse NT version to a product name if not already set
+        if not p.product or p.product == "Windows":
+            if server_like:
+                product = WINDOWS_NT_SERVER_MAP.get((major, minor))
+            else:
+                product = WINDOWS_NT_CLIENT_MAP.get((major, minor))
+            if product:
+                p.product = product
 
     # Build number
     build_match = WIN_BUILD_RE.search(text)

@@ -86,7 +86,7 @@ WINDOWS_CASES = [
     ),
     (
         "Windows NT 5.0 Build 2195 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2000"},
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 2000"},
     ),
     (
         "Windows NT 4.0 Build 1381 Professional x86",
@@ -118,7 +118,7 @@ WINDOWS_CASES = [
     ),
     (
         "Windows NT 5.0 Build 3790.0 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2000"},
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 2000"},
     ),
     (
         "Windows NT 10.0 build 26100 Pro x64",
@@ -167,6 +167,24 @@ WINDOWS_CASES = [
     (
         "Windows NT 6.1 SP2 Build 7601 Professional x86",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"},
+    ),
+
+    # Explicit server variants for ambiguous NT versions
+    (
+        "Windows NT 6.1 Build 7601 Server Datacenter x64",
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2008 R2", "precision": "build"},
+    ),
+    (
+        "Windows NT 6.0 Build 6001 Server Standard x86",
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2008", "precision": "build"},
+    ),
+    (
+        "Windows NT 6.2 Build 9200 Server Standard x64",
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012", "precision": "build"},
+    ),
+    (
+        "Windows NT 6.3 Build 9600 Server Datacenter x64",
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2", "precision": "build"},
     ),
     (
         "Windows NT 10.0 SP2 Build 19045 Pro x64",
