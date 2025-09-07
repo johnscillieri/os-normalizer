@@ -1,7 +1,12 @@
-"""Windows specific parsing logic."""
+"""Windows specific parsing logic.
+
+Refactored for clarity: vendor/edition detection, NT mapping, and build
+mapping are handled by focused helpers. Behavior is preserved while
+avoiding ambiguous NT mappings when server signals are present.
+"""
 
 import re
-from typing import Any
+from typing import Any, Optional
 
 from os_fingerprint.constants import (
     WINDOWS_BUILD_MAP,
@@ -12,7 +17,10 @@ from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the Windows parser
-WIN_EDITION_RE = re.compile(r"\b(professional|enterprise|home|education|ltsc|datacenter)\b", re.IGNORECASE)
+WIN_EDITION_RE = re.compile(
+    r"\b(professional|enterprise|home|education|ltsc|datacenter)\b",
+    re.IGNORECASE,
+)
 WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
@@ -23,116 +31,146 @@ def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     t = text.lower()
     p.kernel_name = "nt"
 
-    # Basic product detection
+    # 1) Product and edition from free text
+    p.product = p.product or _detect_product_from_text(t)
+    p.edition = p.edition or _detect_edition(text)
+
+    # 2) Service Pack
+    _parse_service_pack(text, p)
+
+    # 3) NT version mapping (client vs server)
+    server_like = _is_server_like(t)
+    _apply_nt_mapping(text, t, p, server_like)
+
+    # 4) Build number + marketing channel
+    _apply_build_mapping(text, p)
+
+    # 5) Precision and version_major if applicable
+    _finalize_precision_and_version(p)
+
+    # 6) Vendor + confidence
+    p.vendor = "Microsoft"
+    update_confidence(p, p.precision)
+    return p
+
+
+def _detect_product_from_text(t: str) -> str:
     if "windows 11" in t or "win11" in t:
-        p.product = "Windows 11"
-    elif "windows 10" in t or "win10" in t:
-        p.product = "Windows 10"
-    elif "windows 8.1" in t or "win81" in t:
-        p.product = "Windows 8.1"
-    elif "windows 8" in t or "win8" in t:
-        p.product = "Windows 8"
-    elif "windows 7" in t or "win7" in t:
-        p.product = "Windows 7"
-    elif "windows me" in t or "windows millenium" in t:
-        p.product = "Windows ME"
-    elif "windows 98" in t or "win98" in t:
-        p.product = "Windows 98"
-    elif "windows server 2000" in t or "win2000" in t or "win2k" in t:
-        p.product = "Windows Server 2000"
-    elif "windows server 2003" in t or "win2k3" in t or "win2003" in t:
-        p.product = "Windows Server 2003"
-    elif "windows server 2008" in t or "win2k8" in t or "win2008" in t:
-        p.product = "Windows Server 2008"
-    elif "windows server 2012" in t or "win2k12" in t:
-        p.product = "Windows Server 2012"
-    elif "windows server 2016" in t or "win2k16" in t or "win2016" in t:
-        p.product = "Windows Server 2016"
-    elif "windows server 2019" in t or "win2k19" in t or "win2019" in t:
-        p.product = "Windows Server 2019"
-    elif "windows server 2022" in t or "win2k22" in t:
-        p.product = "Windows Server 2022"
-    elif "windows" in t and p.product is None:
-        p.product = "Windows"
+        return "Windows 11"
+    if "windows 10" in t or "win10" in t:
+        return "Windows 10"
+    if "windows 8.1" in t or "win81" in t:
+        return "Windows 8.1"
+    if "windows 8" in t or "win8" in t:
+        return "Windows 8"
+    if "windows 7" in t or "win7" in t:
+        return "Windows 7"
+    if "windows me" in t or "windows millenium" in t:
+        return "Windows ME"
+    if "windows 98" in t or "win98" in t:
+        return "Windows 98"
 
-    # Edition (Professional, Enterprise, etc.)
+    # Server explicit names
+    if "windows server 2022" in t or "win2k22" in t or "win2022" in t:
+        return "Windows Server 2022"
+    if "windows server 2019" in t or "win2k19" in t or "win2019" in t:
+        return "Windows Server 2019"
+    if "windows server 2016" in t or "win2k16" in t or "win2016" in t:
+        return "Windows Server 2016"
+    if "windows server 2012" in t or "win2k12" in t or "win2012" in t:
+        return "Windows Server 2012"
+    if "windows server 2008" in t or "win2k8" in t or "win2008" in t:
+        return "Windows Server 2008"
+    if "windows server 2003" in t or "win2k3" in t or "win2003" in t:
+        return "Windows Server 2003"
+    if "windows server 2000" in t or "win2k" in t or "win2000" in t:
+        return "Windows Server 2000"
+
+    if "windows" in t:
+        return "Windows"
+    return "Unknown"
+
+
+def _detect_edition(text: str) -> Optional[str]:
     m = WIN_EDITION_RE.search(text)
-    if m:
-        p.edition = m.group(1).title()
+    return m.group(1).title() if m else None
 
-    # Service Pack
+
+def _parse_service_pack(text: str, p: OSParse) -> None:
     sp = WIN_SP_RE.search(text)
     if sp:
         p.version_patch = int(sp.group(1))
         p.evidence["service_pack"] = sp.group(0)
 
-    # NT version (e.g. nt 6.3)
-    nt = WIN_NT_RE.search(text)
-    if nt:
-        major, minor = int(nt.group(1)), int(nt.group(2))
-        p.evidence["nt_version"] = f"{major}.{minor}"
-        # Decide if this looks like a Server SKU
-        server_like = any(
-            kw in t
-            for kw in (
-                "server",
-                "datacenter",
-                "standard",
-                "essentials",
-                "foundation",
-                "core",  # server core often appears
-                "hyper-v",
-            )
+
+def _is_server_like(t: str) -> bool:
+    return any(
+        kw in t
+        for kw in (
+            "server",
+            "datacenter",
+            "standard",
+            "essentials",
+            "foundation",
+            "core",  # server core often appears
+            "hyper-v",
         )
+    )
 
-        # Map coarse NT version to a product name if not already set
-        if not p.product or p.product == "Windows":
-            if server_like:
-                product = WINDOWS_NT_SERVER_MAP.get((major, minor))
-            else:
-                product = WINDOWS_NT_CLIENT_MAP.get((major, minor))
-            if product:
-                p.product = product
 
-    # Build number
-    build_match = WIN_BUILD_RE.search(text)
-    if build_match:
-        build_num = int(build_match.group(1))
-        p.version_build = str(build_num)
+def _apply_nt_mapping(text: str, t: str, p: OSParse, server_like: bool) -> None:
+    nt = WIN_NT_RE.search(text)
+    if not nt:
+        return
+    major, minor = int(nt.group(1)), int(nt.group(2))
+    p.evidence["nt_version"] = f"{major}.{minor}"
 
-        # Construct a kernel version string for recent Windows releases
-        if p.product == "Windows 10/11" or "10.0" in text:
-            p.kernel_version = f"10.0.{build_num}"
-        else:
-            p.kernel_version = None
+    # If product already explicitly set (e.g., "Windows Server 2019"), keep it
+    if p.product and p.product not in ("Windows", "Windows 10/11"):
+        return
 
-        # Map build number to specific product/channel using the map from constants
+    product = WINDOWS_NT_SERVER_MAP.get((major, minor)) if server_like else WINDOWS_NT_CLIENT_MAP.get((major, minor))
+    if product:
+        p.product = product
+
+
+def _apply_build_mapping(text: str, p: OSParse) -> None:
+    m = WIN_BUILD_RE.search(text)
+    if not m:
+        return
+    build_num = int(m.group(1))
+    p.version_build = str(build_num)
+
+    # Kernel version for recent Windows 10/11
+    if (p.product == "Windows 10/11") or ("10.0" in text):
+        p.kernel_version = f"{10}.{0}.{build_num}"
+    else:
+        p.kernel_version = None
+
+    # Only apply client build mapping if current product isn't an explicit Server
+    is_server_product = isinstance(p.product, str) and "server" in p.product.lower()
+    if not is_server_product:
         for lo, hi, product_name, marketing in WINDOWS_BUILD_MAP:
             if lo <= build_num <= hi:
                 p.product = product_name
                 p.channel = marketing
                 break
 
-    # Precision hierarchy - prefer more specific info when available
+
+def _finalize_precision_and_version(p: OSParse) -> None:
     if p.version_build:
         p.precision = "build"
-    elif p.version_patch is not None:
+        return
+    if p.version_patch is not None:
         p.precision = "patch"
-    elif p.product and any(x in p.product for x in ("7", "8", "10", "11")):
-        # Extract major version from the product string
+        return
+    if p.product and any(x in p.product for x in ("7", "8", "10", "11")):
         digits = re.findall(r"\d+", p.product)
         if digits:
             p.version_major = int(digits[0])
         p.precision = "major"
-    elif p.product:
+        return
+    if p.product:
         p.precision = "product"
     else:
         p.precision = "family"
-
-    # Vendor is always Microsoft for Windows
-    p.vendor = "Microsoft"
-
-    # Boost confidence based on how precise the parsing was
-    update_confidence(p, p.precision)
-
-    return p

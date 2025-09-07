@@ -63,7 +63,6 @@ WINDOWS_NT_SERVER_MAP = {
 
 # Human readable aliases (macOS codenames)
 MACOS_ALIASES = {
-    # macOS codenames
     "sonoma": "macOS 14",
     "sequoia": "macOS 15",
     "ventura": "macOS 13",
