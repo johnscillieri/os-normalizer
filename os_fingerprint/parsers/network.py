@@ -26,7 +26,7 @@ CISCO_EDITION_RE = re.compile(
 # Juniper
 JUNOS_RE = re.compile(r"\bjunos\b", re.IGNORECASE)
 JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.IGNORECASE)
-JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9-]+\.tgz)\b", re.IGNORECASE)
+JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9_.-]+\.tgz)\b", re.IGNORECASE)
 JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.IGNORECASE)
 
 # Fortinet
@@ -45,31 +45,35 @@ HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A
 
 # Netgear
 NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.IGNORECASE)
-NETGEAR_VER_RE = re.compile(r"\bV(\d+\.\d+\.\d+(?:_\d+\.\d+\.\d+)?)\b", re.IGNORECASE)
+NETGEAR_VER_RE = re.compile(r"\bV(\d+\.\d+\.\d+(?:\.\d+)?(?:_\d+\.\d+\.\d+)?)\b", re.IGNORECASE)
 NETGEAR_MODEL_RE = re.compile(r"\b([RN][0-9]{3,4}[A-Z]?)\b", re.IGNORECASE)
 
 
 def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     """Populate an OSParse instance with network gear specific details."""
-    t = text
 
     # Vendor detection
-    if "cisco" in t or CISCO_IOS_XE_RE.search(t) or CISCO_IOS_RE.search(t) or CISCO_NXOS_RE.search(t):
+    if (
+        "cisco" in text.lower()
+        or CISCO_IOS_XE_RE.search(text)
+        or CISCO_IOS_RE.search(text)
+        or CISCO_NXOS_RE.search(text)
+    ):
         p.vendor = "Cisco"
         p.family = p.family or "network-os"
 
         # Detect product line
-        if CISCO_IOS_XE_RE.search(t):
+        if CISCO_IOS_XE_RE.search(text):
             p.product, p.kernel_name = "IOS XE", "ios-xe"
-        elif CISCO_NXOS_RE.search(t):
+        elif CISCO_NXOS_RE.search(text):
             p.product, p.kernel_name = "NX-OS", "nx-os"
-        elif CISCO_IOS_RE.search(t):
+        elif CISCO_IOS_RE.search(text):
             p.product, p.kernel_name = "IOS", "ios"
         else:
             p.product = p.product or "Cisco OS"
 
         # Version (Version X or nxos.X from text)
-        vm = CISCO_VERSION_RE.search(t)
+        vm = CISCO_VERSION_RE.search(text)
         if vm:
             ver = vm.group(1) or vm.group(2)
             if ver:
@@ -87,7 +91,7 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
                 )
 
         # Image filename
-        img = CISCO_IMAGE_RE.search(t)
+        img = CISCO_IMAGE_RE.search(text)
         if img:
             p.build_id = img.group(1)
             p.precision = "build"
@@ -103,12 +107,12 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
                 p.precision = "patch"
 
         # Model
-        mm = CISCO_MODEL_RE.search(t)
+        mm = CISCO_MODEL_RE.search(text)
         if mm:
             p.hw_model = mm.group(1)
 
         # Edition (universalk9/ipbase)
-        fl = CISCO_EDITION_RE.search(t)
+        fl = CISCO_EDITION_RE.search(text)
         if fl:
             p.edition = fl.group(1).lower()
 
@@ -116,20 +120,20 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         from os_fingerprint.constants import CISCO_TRAIN_NAMES
 
         for train in CISCO_TRAIN_NAMES:
-            if train.lower() in t:
+            if train.lower() in text.lower():
                 p.codename = train
                 break
 
         # Boost confidence based on precision
         update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
 
-    elif JUNOS_RE.search(t):
+    elif JUNOS_RE.search(text):
         p.vendor = "Juniper"
         p.product = "Junos"
         p.family = p.family or "network-os"
         p.kernel_name = "junos"
 
-        vm = JUNOS_VER_RE.search(t)
+        vm = JUNOS_VER_RE.search(text)
         if vm:
             ver = vm.group(1)
             p.evidence["version_raw"] = ver
@@ -142,25 +146,25 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
             p.version_build = ver
             p.precision = "minor"
 
-        pkg = JUNOS_PKG_RE.search(t)
+        pkg = JUNOS_PKG_RE.search(text)
         if pkg:
             p.build_id = pkg.group(1)
             p.precision = "build"
 
-        mdl = JUNOS_MODEL_RE.search(t)
+        mdl = JUNOS_MODEL_RE.search(text)
         if mdl:
             p.hw_model = mdl.group(1)
 
         # Boost confidence based on precision
         update_confidence(p, p.precision if p.precision in ("build", "minor") else "major")
 
-    elif FORTI_RE.search(t):
+    elif FORTI_RE.search(text):
         p.vendor = "Fortinet"
         p.product = "FortiOS"
         p.family = p.family or "network-os"
         p.kernel_name = "fortios"
 
-        ver = FORTI_VER_RE.search(t)
+        ver = FORTI_VER_RE.search(text)
         if ver:
             v = ver.group(1)
             nums = re.findall(r"\d+", v)
@@ -175,38 +179,38 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
                 "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
             )
 
-        bld = FORTI_BUILD_RE.search(t)
+        bld = FORTI_BUILD_RE.search(text)
         if bld:
             p.version_build = (p.version_build or "") + f"+build.{bld.group(1)}"
             p.precision = "build"
 
-        img = FORTI_IMG_RE.search(t)
+        img = FORTI_IMG_RE.search(text)
         if img:
             p.build_id = img.group(1)
             p.precision = "build"
 
-        mdl = FORTI_MODEL_RE.search(t)
+        mdl = FORTI_MODEL_RE.search(text)
         if mdl:
             p.hw_model = mdl.group(1).replace("FortiGate-", "FG-")
 
-        ch = FORTI_CHANNEL_RE.search(t)
+        ch = FORTI_CHANNEL_RE.search(text)
         if ch:
             p.channel = ch.group(1).upper()
 
         # Boost confidence based on precision
         update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
 
-    elif HUAWEI_RE.search(t):
+    elif HUAWEI_RE.search(text):
         p.vendor = "Huawei"
         p.product = "VRP"
         p.family = p.family or "network-os"
         p.kernel_name = "vrp"
 
-        raw = HUAWEI_RAWVER_RE.search(t)
+        raw = HUAWEI_RAWVER_RE.search(text)
         if raw:
             p.version_build = raw.group(0)
 
-        vm = HUAWEI_VER_RE.search(t)
+        vm = HUAWEI_VER_RE.search(text)
         if vm:
             maj, r, c = vm.group(1), vm.group(2), vm.group(3)
             p.version_major = int(maj)
@@ -214,7 +218,7 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
             # Cxx not numeric; keep patch None, store composite in version_build
             p.precision = "minor"
 
-        mdl = HUAWEI_MODEL_RE.search(t)
+        mdl = HUAWEI_MODEL_RE.search(text)
         if mdl:
             p.hw_model = mdl.group(1)
 
@@ -223,13 +227,13 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         # Boost confidence based on precision
         update_confidence(p, p.precision if p.precision in ("minor", "build") else "major")
 
-    elif NETGEAR_RE.search(t):
+    elif NETGEAR_RE.search(text):
         p.vendor = "Netgear"
         p.product = "Firmware"
         p.family = p.family or "network-os"
         p.kernel_name = "firmware"
 
-        vm = NETGEAR_VER_RE.search(t)
+        vm = NETGEAR_VER_RE.search(text)
         if vm:
             v = vm.group(1)
             nums = re.findall(r"\d+", v)
@@ -244,7 +248,7 @@ def parse_network(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
                 "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
             )
 
-        mdl = NETGEAR_MODEL_RE.search(t)
+        mdl = NETGEAR_MODEL_RE.search(text)
         if mdl:
             p.hw_model = mdl.group(1)
 

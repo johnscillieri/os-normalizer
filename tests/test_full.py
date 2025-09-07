@@ -157,6 +157,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
             family="network-os",
             vendor="Juniper",
             product="Junos",
+            kernel_name="junos",
             version_major=20,
             version_minor=4,
             version_build="20.4R3-S3",

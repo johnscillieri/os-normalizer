@@ -100,6 +100,18 @@ The library follows a modular architecture:
 - **constants.py**: Static lookup tables (aliases, build maps, codenames)
 - **helpers.py**: Utility functions (architecture extraction, confidence calculation)
 
+## Testing
+
+You can run tests with uv in a few ways:
+
+- Ephemeral runner (downloads pytest if needed):
+  - `uvx pytest`
+- Use the project environment and dev dependencies declared in `pyproject.toml`:
+  - `uv run --with dev pytest`
+- Optional editable install for import paths:
+  - `uv pip install -e .`
+  - `uv run pytest`
+
 ## Contributing
 
 Contributions are welcome! Please ensure that any new parsers or improvements follow the existing code patterns and include appropriate tests.
