@@ -237,8 +237,7 @@ def all_cases():
         netgear_cases(),
     ]
     for g in generators:
-        for case in g:
-            yield case
+        yield from g
 
 
 def test_bulk_parsing_200_plus():

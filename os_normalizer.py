@@ -26,35 +26,6 @@ PRECISION_ORDER = {
 # ============================================================
 # Family detection (orchestrator logic)
 # ============================================================
-
-OS_RELEASE_KEYS = {
-    "ID",
-    "ID_LIKE",
-    "NAME",
-    "PRETTY_NAME",
-    "VERSION_ID",
-    "VERSION_CODENAME",
-}
-
-
-def parse_os_release(blob_text: str) -> dict[str, Any]:
-    out: dict[str, Any] = {}
-    for line in blob_text.splitlines():
-        line = line.strip()
-        if not line or line.startswith("#") or "=" not in line:
-            continue
-        k, v = line.split("=", 1)
-        k = k.strip().upper()
-        if k not in OS_RELEASE_KEYS:
-            continue
-        v = v.strip().strip('"').strip("'")
-        if k == "ID_LIKE":
-            out[k] = [s.strip().lower() for s in re.split(r"[ ,]+", v) if s.strip()]
-        else:
-            out[k] = v
-    return out
-
-
 def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, dict[str, Any]]:
     t = text.lower()
     ev = {}
@@ -87,7 +58,7 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
         ev["hit"] = "linux"
         return "linux", 0.6, ev
     # Windows
-    if "windows" in t or "nt " in t or data.get("os", "").lower() == "windows":
+    if "windows" in t or "nt " in t or t.startswith("win") or data.get("os", "").lower() == "windows":
         ev["hit"] = "windows"
         return "windows", 0.6, ev
     # Apple

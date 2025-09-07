@@ -14,21 +14,20 @@ WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 
 
 def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with Windows‑specific details.
-    """
+    """Populate an OSParse instance with Windows‑specific details."""
     t = text.lower()
     p.kernel_name = "nt"
 
     # Basic product detection
-    if "windows 11" in t:
+    if "windows 11" in t or "win11" in t:
         p.product = "Windows 11"
-    elif "windows 10" in t:
+    elif "windows 10" in t or "win10" in t:
         p.product = "Windows 10"
-    elif "windows 8.1" in t:
+    elif "windows 8.1" in t or "win81" in t:
         p.product = "Windows 8.1"
-    elif "windows 8" in t:
+    elif "windows 8" in t or "win8" in t:
         p.product = "Windows 8"
-    elif "windows 7" in t:
+    elif "windows 7" in t or "win7" in t:
         p.product = "Windows 7"
     elif "windows" in t and p.product is None:
         p.product = "Windows"
@@ -52,9 +51,9 @@ def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         # Map coarse NT version to a generic product name if not already set
         from os_fingerprint.constants import WINDOWS_NT_MAP
 
-        coarse = WINDOWS_NT_MAP.get((major, minor))
-        if coarse and not p.product:
-            p.product = coarse[0]
+        product = WINDOWS_NT_MAP.get((major, minor))
+        if product and (not p.product or p.product == "Windows"):
+            p.product = product
 
     # Build number
     build_match = WIN_BUILD_RE.search(text)
