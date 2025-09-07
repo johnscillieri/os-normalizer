@@ -1,10 +1,7 @@
-from __future__ import annotations
-
-import re
-from datetime import datetime
+from datetime import UTC, datetime
 from typing import Any
 
-from os_fingerprint.models import OSParse
+from os_fingerprint.models import OSObservation, OSParse
 from os_fingerprint.parsers.bsd import parse_bsd
 from os_fingerprint.parsers.linux import parse_linux
 from os_fingerprint.parsers.macos import parse_macos
@@ -84,7 +81,7 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
 # ============================================================
 
 
-def normalize_os(observation: Any) -> Any:
+def normalize_os(observation: OSObservation) -> OSParse:
     text = (observation.raw_os_string or "").strip()
     data = observation.raw_os_json or {}
     t = text.lower()
@@ -124,7 +121,7 @@ def normalize_os(observation: Any) -> Any:
 # ============================================================
 
 
-def choose_best_fact(candidates: list[Any]) -> Any:
+def choose_best_fact(candidates: list[OSParse]) -> OSParse:
     if not candidates:
         raise ValueError("No candidates")
     return sorted(
@@ -142,7 +139,7 @@ if __name__ == "__main__":
     # Import the OSObservation class for the test cases
     from os_fingerprint.models import OSObservation
 
-    now = datetime.utcnow()
+    now = datetime.now(tz=UTC)
     samples = [
         OSObservation(
             "1",
@@ -234,4 +231,4 @@ if __name__ == "__main__":
         parsed = normalize_os(s)
         print("----", s.raw_os_string)
         print(parsed)
-        print("")
+        print()

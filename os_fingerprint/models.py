@@ -3,8 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from datetime import datetime
-from typing import Any
+from typing import TYPE_CHECKING, Any
+
+if TYPE_CHECKING:
+    from datetime import datetime
 
 
 @dataclass
@@ -35,7 +37,7 @@ class OSParse:
     product: str | None = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
     edition: str | None = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
     codename: str | None = None  # Sequoia; Ubuntu codename; Cisco train
-    channel: str | None = None  # LTS/Beta/GA/R3‑S3 etc.
+    channel: str | None = None  # LTS/Beta/GA/R3-S3 etc.
 
     # Versions
     version_major: int | None = None

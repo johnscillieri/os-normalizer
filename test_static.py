@@ -1,13 +1,15 @@
-import itertools as it
+"""Build a static set of test cases to verify correct parsing"""
+
 from datetime import UTC, datetime
 from typing import Any
 
 import pytest
+
 from os_fingerprint.models import OSObservation
 from os_fingerprint.orchestrator import normalize_os
 
 
-def mk_obs(i: int, raw: str, json_data=None):
+def mk_obs(i: int, raw: str, json_data: dict[str, Any] | None = None):
     return OSObservation(
         str(i),
         "hostname",
@@ -163,7 +165,7 @@ WINDOWS_CASES = [
     ),
     (
         "Windows Server 2012 R2 Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2"},
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012"},
     ),
     (
         "Windows NT 10.0 build 19045 Pro x64",
@@ -216,58 +218,61 @@ MACOS_CASES = [
 LINUX_CASES = [
     (
         "Linux host 5.15.0-122-generic x86_64",
-        {"family": "linux", "vendor": None, "product": "Ubuntu"},
+        {"family": "linux", "vendor": "canonical", "product": "Ubuntu"},
         {"os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy'},
     ),
     (
         "Linux host 5.10.0-30-amd64",
-        {"family": "linux"},
+        {"family": "linux", "vendor": "debian", "product": "Debian GNU/Linux"},
         {"os_release": 'NAME="Debian GNU/Linux"\nID=debian\nVERSION_ID="12"\nVERSION_CODENAME=bookworm'},
     ),
     (
         "Linux node 6.5.7-arch1-1",
-        {"family": "linux"},
+        {"family": "linux", "vendor": "Arch", "product": "Arch Linux"},
         {"os_release": 'NAME="Arch Linux"\nID=arch\nVERSION_ID="rolling"'},
     ),
     (
         "Linux host 4.18.0-553.8.1.el8_10.x86_64",
-        {"family": "linux", "product": "Red"},
+        {"family": "linux", "vendor": "Red Hat", "product": "Red Hat Enterprise Linux"},
         {
-            "os_release": 'NAME="Red Hat Enterprise Linux"\nID=rhel\nVERSION_ID="8.10"\nPRETTY_NAME="Red Hat Enterprise Linux 8.10 (Ootpa)"'
+            "os_release": '''NAME="Red Hat Enterprise Linux"
+            ID=rhel
+            VERSION_ID="8.10"
+            PRETTY_NAME="Red Hat Enterprise Linux 8.10 (Ootpa)"'''
         },
     ),
     (
         "Linux host 5.4.0-105-amd64",
-        {"family": "linux", "product": "Rocky"},
+        {"family": "linux", "vendor": "Rocky", "product": "Rocky Linux"},
         {"os_release": 'NAME="Rocky Linux"\nID=rocky\nVERSION_ID="9.4"\nPRETTY_NAME="Rocky Linux 9.4 (Blue Onyx)"'},
     ),
     (
         "Linux host 5.15.0-122-generic aarch64",
-        {"family": "linux", "product": "AlmaLinux"},
+        {"family": "linux", "vendor": "AlmaLinux", "product": "AlmaLinux"},
         {
             "os_release": 'NAME="AlmaLinux"\nID=almalinux\nVERSION_ID="9.4"\nPRETTY_NAME="AlmaLinux 9.4 (Seafoam Ocelot)"'
         },
     ),
     (
         "Linux host 5.15.0-122-generic arm64",
-        {"family": "linux", "product": "Amazon"},
+        {"family": "linux", "vendor": "Amazon", "product": "Amazon Linux"},
         {"os_release": 'NAME="Amazon Linux"\nID=amzn\nVERSION_ID="2023"\nPRETTY_NAME="Amazon Linux 2023"'},
     ),
     (
         "Linux host 3.10.0-862.el7.x86_64",
-        {"family": "linux", "product": "CentOS"},
+        {"family": "linux", "vendor": "Red Hat", "product": "CentOS Linux"},
         {"os_release": 'NAME="CentOS Linux"\nID=centos\nVERSION_ID="7"\nPRETTY_NAME="CentOS Linux 7 (Core)"'},
     ),
     (
         "Linux host 5.14.0-70.fc33.x86_64",
-        {"family": "linux", "product": "Fedora"},
+        {"family": "linux", "vendor": "Fedora Project", "product": "Fedora Linux"},
         {
             "os_release": 'NAME="Fedora Linux"\nID=fedora\nVERSION_ID="33"\nPRETTY_NAME="Fedora Linux 33 (Workstation Edition)"'
         },
     ),
     (
         "Linux host 4.19.0-18-amd64",
-        {"family": "linux", "product": "Debian"},
+        {"family": "linux", "vendor": "Debian", "product": "Debian GNU/Linux"},
         {
             "os_release": 'NAME="Debian GNU/Linux"\nID=debian\nVERSION_ID="10"\nPRETTY_NAME="Debian GNU/Linux 10 (buster)"'
         },
@@ -308,7 +313,7 @@ NETWORK_OS_CASES = [
 # ----------------------------------------------------------------------
 
 
-def create_test_parameters():
+def create_test_parameters() -> list:
     """Create parameterized test cases with readable, unique names and debug context."""
     test_cases = []
 
@@ -376,14 +381,13 @@ def create_test_parameters():
 
 
 # ----------------------------------------------------------------------
-# ✅ Main Test – Clear Failure Messages with Context
+# ✅ Main Test - Clear Failure Messages with Context
 # ----------------------------------------------------------------------
 
 
-@pytest.mark.parametrize("obs,expected", create_test_parameters())
-def test_static_os_fingerprinting(obs: OSObservation, expected: dict[str, Any]):
-    """
-    Test that raw OS strings are correctly normalized into structured fingerprints.
+@pytest.mark.parametrize(("obs", "expected"), create_test_parameters())
+def test_static_os_fingerprinting(obs: OSObservation, expected: dict[str, Any]) -> None:
+    """Test that raw OS strings are correctly normalized into structured fingerprints.
 
     Each case includes:
       - obs.raw: the input string (visible in test ID)

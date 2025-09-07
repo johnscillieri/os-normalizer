@@ -76,15 +76,15 @@ def linux_cases():
         ),
         (
             'NAME="Debian GNU/Linux"\nID=debian\nVERSION_ID="12"\nVERSION_CODENAME=bookworm\nPRETTY_NAME="Debian GNU/Linux 12 (bookworm)"',
-            "Debian",
+            "Debian GNU/Linux",
         ),
         (
             'NAME="Red Hat Enterprise Linux"\nID=rhel\nVERSION_ID="8.10"\nPRETTY_NAME="Red Hat Enterprise Linux 8.10 (Ootpa)"',
-            "Red",
+            "Red Hat Enterprise Linux",
         ),
         (
             'NAME="Rocky Linux"\nID=rocky\nVERSION_ID="9.4"\nPRETTY_NAME="Rocky Linux 9.4 (Blue Onyx)"',
-            "Rocky",
+            "Rocky Linux",
         ),
         (
             'NAME="AlmaLinux"\nID=almalinux\nVERSION_ID="9.4"\nPRETTY_NAME="AlmaLinux 9.4 (Seafoam Ocelot)"',
@@ -92,7 +92,7 @@ def linux_cases():
         ),
         (
             'NAME="Amazon Linux"\nID=amzn\nVERSION_ID="2023"\nPRETTY_NAME="Amazon Linux 2023"',
-            "Amazon",
+            "Amazon Linux",
         ),
     ]
     i = 1400
@@ -245,7 +245,7 @@ def test_bulk_parsing_200_plus():
     ok = 0
     for obs, exp in cases:
         p = normalize_os(obs)
-        print(f"\n{obs}\n vs \n{p}")
+        # print(f"\n{obs}\n vs \n{p}")
         # Required expectations: family + (vendor/product if provided)
         assert p.family == exp["family"]
         if "vendor" in exp:

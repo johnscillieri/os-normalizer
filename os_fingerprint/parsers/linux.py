@@ -3,7 +3,7 @@
 import re
 from typing import Any
 
-from os_fingerprint.helpers import parse_os_release, update_confidence
+from os_fingerprint.helpers import extract_arch_from_text, parse_os_release, update_confidence
 from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the Linux parser
@@ -72,7 +72,7 @@ def parse_linux(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         if p.distro:
             p.vendor = vendor_by_distro.get(p.distro)
 
-        p.product = (p.pretty_name.split()[0] if p.pretty_name else (p.distro or "Linux")).replace('"', "")
+        p.product = (osrel.get("NAME", "") if osrel.get("NAME") else (p.distro or "Linux")).replace('"', "")
         p.precision = (
             "patch"
             if p.version_patch is not None
@@ -86,8 +86,6 @@ def parse_linux(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
 
     # Fallback arch from text if not already set elsewhere
     if not p.arch:
-        from os_fingerprint.helpers import extract_arch_from_text
-
         p.arch = extract_arch_from_text(text)
 
     return p

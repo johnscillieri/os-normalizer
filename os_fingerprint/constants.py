@@ -50,6 +50,7 @@ WINDOWS_BUILD_MAP = [
 
 # Mapping of Windows NT version tuples to product name
 WINDOWS_NT_MAP = {
+    (4, 0): "Windows NT 4.0",
     (5, 0): "Windows Server 2000",
     (5, 1): "Windows XP",
     (5, 2): "Windows Server 2003",
