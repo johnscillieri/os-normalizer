@@ -94,7 +94,7 @@ Represents structured operating system information:
 
 The library follows a modular architecture:
 
-- **orchestrator.py**: Main orchestration logic that delegates to appropriate parsers
+- **os_normalizer.py**: Main orchestration logic that delegates to appropriate parsers
 - **parsers/**: OS-specific parsers (macOS, Linux, Windows, Network, Mobile, BSD)
 - **models.py**: Data models for parsed results
 - **constants.py**: Static lookup tables (aliases, build maps, codenames)

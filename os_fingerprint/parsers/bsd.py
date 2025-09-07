@@ -28,10 +28,4 @@ def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     # Boost confidence based on precision
     update_confidence(p, p.precision)
 
-    # Fallback arch from text if not already set elsewhere
-    if not p.arch:
-        from os_fingerprint.helpers import extract_arch_from_text
-
-        p.arch = extract_arch_from_text(text)
-
     return p

@@ -1,12 +1,10 @@
 """Build a static set of test cases to verify correct parsing"""
 
-from datetime import UTC, datetime
 from typing import Any
 
 import pytest
 
-from os_fingerprint.orchestrator import normalize_os
-
+from os_normalizer import normalize_os
 
 # ----------------------------------------------------------------------
 # Test Cases Grouped by OS Family (Clean & Readable)

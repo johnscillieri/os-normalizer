@@ -1,8 +1,6 @@
 import itertools as it
-from datetime import UTC, datetime
 
-# Import from the orchestrator module to test the refactored structure
-from os_fingerprint.orchestrator import normalize_os
+from os_normalizer import normalize_os
 
 
 def mk_obs(i, raw, json=None):
@@ -239,7 +237,6 @@ def test_bulk_parsing_200_plus():
     ok = 0
     for obs, exp in cases:
         p = normalize_os(obs[1], obs[2])
-        # print(f"\n{obs}\n vs \n{p}")
         # Required expectations: family + (vendor/product if provided)
         assert p.family == exp["family"]
         if "vendor" in exp:

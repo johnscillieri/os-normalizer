@@ -6,19 +6,19 @@ from typing import Any
 from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
+from os_fingerprint.constants import ALIASES  # Aliases like "Sequoia" - using the ALIASES from constants
+
+from os_fingerprint.constants import MACOS_DARWIN_MAP
+
 # Regex patterns used only by the macOS parser
 DARWIN_RE = re.compile(r"\bdarwin\s?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.IGNORECASE)
 
 
 def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with macOS‑specific details.
-    """
+    """Populate an OSParse instance with macOS‑specific details."""
     t = text
     p.product = "macOS"
     p.vendor = "Apple"
-
-    # Aliases like "Sequoia" - using the ALIASES from constants
-    from os_fingerprint.constants import ALIASES
 
     for alias, normalized in ALIASES.items():
         if alias in t and normalized.startswith("macOS"):
@@ -47,9 +47,6 @@ def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
         p.kernel_name = "darwin"
         p.kernel_version = ".".join([g for g in m.groups() if g])
 
-        # Use MACOS_DARWIN_MAP from constants
-        from os_fingerprint.constants import MACOS_DARWIN_MAP
-
         if dmaj in MACOS_DARWIN_MAP:
             prod, ver, code = MACOS_DARWIN_MAP[dmaj]
             p.product = prod
@@ -76,8 +73,6 @@ def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
 
     # Fallback codename from text
     if not p.codename:
-        from os_fingerprint.constants import MACOS_DARWIN_MAP
-
         for dmaj, (_, _, code) in MACOS_DARWIN_MAP.items():
             if code.lower() in t:
                 p.codename = code
@@ -97,12 +92,7 @@ def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
                         }[x],
                     )  # type: ignore
 
-    # Fallback arch from text if not already set elsewhere
-    if not p.arch:
-        from os_fingerprint.helpers import extract_arch_from_text
-
-        p.arch = extract_arch_from_text(text)
-
     # Boost confidence based on precision
     update_confidence(p, p.precision)
+
     return p

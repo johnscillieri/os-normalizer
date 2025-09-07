@@ -78,14 +78,11 @@ def parse_linux(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
             if p.version_patch is not None
             else ("minor" if p.version_minor is not None else ("major" if p.version_major is not None else "family"))
         )
-        update_confidence(p, p.precision)
+
     else:
         p.product = "Linux"
         p.precision = "family"
-        update_confidence(p, p.precision)
 
-    # Fallback arch from text if not already set elsewhere
-    if not p.arch:
-        p.arch = extract_arch_from_text(text)
+    update_confidence(p, p.precision)
 
     return p

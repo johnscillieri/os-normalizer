@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from os_fingerprint.constants import WINDOWS_BUILD_MAP, WINDOWS_NT_MAP
-from os_fingerprint.helpers import extract_arch_from_text, update_confidence
+from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
 # Regex patterns used only by the Windows parser
@@ -110,10 +110,6 @@ def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
 
     # Vendor is always Microsoft for Windows
     p.vendor = "Microsoft"
-
-    # Fallback architecture extraction if not already set elsewhere
-    if not p.arch:
-        p.arch = extract_arch_from_text(text)
 
     # Boost confidence based on how precise the parsing was
     update_confidence(p, p.precision)

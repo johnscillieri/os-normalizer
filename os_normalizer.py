@@ -1,6 +1,7 @@
 from datetime import UTC, datetime
 from typing import Any
 
+from os_fingerprint.helpers import extract_arch_from_text
 from os_fingerprint.models import OSParse
 from os_fingerprint.parsers.bsd import parse_bsd
 from os_fingerprint.parsers.linux import parse_linux
@@ -76,12 +77,7 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
     return None, 0.0, ev
 
 
-# ============================================================
-# Orchestrator (main orchestration logic)
-# ============================================================
-
-
-def normalize_os(text: str, data: dict | None) -> OSParse:
+def normalize_os(text: str, data: dict | None = None) -> OSParse:
     text = text.strip()
     data = data or {}
     t = text.lower()
@@ -109,12 +105,11 @@ def normalize_os(text: str, data: dict | None) -> OSParse:
     else:
         p.precision = "unknown"
 
+    # Fallback arch from text if not already set elsewhere
+    if not p.arch:
+        p.arch = extract_arch_from_text(text)
+
     return p
-
-
-# ============================================================
-# Reconciliation (many parses -> one fact)
-# ============================================================
 
 
 def choose_best_fact(candidates: list[OSParse]) -> OSParse:
@@ -126,10 +121,6 @@ def choose_best_fact(candidates: list[OSParse]) -> OSParse:
         reverse=True,
     )[0]
 
-
-# ============================================================
-# Manual smoke run
-# ============================================================
 
 if __name__ == "__main__":
     now = datetime.now(tz=UTC)
