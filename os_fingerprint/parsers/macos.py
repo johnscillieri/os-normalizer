@@ -3,42 +3,26 @@
 import re
 from typing import Any
 
+from os_fingerprint.constants import MACOS_ALIASES, MACOS_DARWIN_MAP
 from os_fingerprint.helpers import update_confidence
 from os_fingerprint.models import OSParse
 
-from os_fingerprint.constants import ALIASES  # Aliases like "Sequoia" - using the ALIASES from constants
-
-from os_fingerprint.constants import MACOS_DARWIN_MAP
-
 # Regex patterns used only by the macOS parser
-DARWIN_RE = re.compile(r"\bdarwin\s?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.IGNORECASE)
+DARWIN_RE = re.compile(r"\bdarwin\b[^\d\n]*?(\d+)(?:\.(\d+))?(?:\.(\d+))?\b", re.IGNORECASE)
 
 
 def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with macOS‑specific details."""
+    """Populate an OSParse instance with macOS-specific details."""
     t = text
     p.product = "macOS"
     p.vendor = "Apple"
 
-    for alias, normalized in ALIASES.items():
-        if alias in t and normalized.startswith("macOS"):
+    for alias, normalized in MACOS_ALIASES.items():
+        if alias in t:
             parts = normalized.split()
             if len(parts) == 2 and parts[1].isdigit():
                 p.version_major = int(parts[1])
-                # Use the precision function from helpers to determine precision
-
-                p.precision = max(
-                    p.precision,
-                    "major",
-                    key=lambda x: {
-                        "family": 0,
-                        "product": 1,
-                        "major": 2,
-                        "minor": 3,
-                        "patch": 4,
-                        "build": 5,
-                    }[x],
-                )  # type: ignore
+                p.precision = "major"
 
     # Darwin version
     m = DARWIN_RE.search(t)

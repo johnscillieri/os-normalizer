@@ -16,22 +16,6 @@ ARCH_SYNONYMS = {
     "ppc64le": "ppc64le",
 }
 
-# Human readable aliases (macOS codenames, Windows shorthand)
-ALIASES = {
-    # macOS codenames
-    "sonoma": "macOS 14",
-    "sequoia": "macOS 15",
-    "ventura": "macOS 13",
-    "monterey": "macOS 12",
-    "big sur": "macOS 11",
-    "bigsur": "macOS 11",
-    "catalina": "macOS 10.15",
-    # Windows shorthands
-    "win7": "Windows 7",
-    "win10": "Windows 10",
-    "win11": "Windows 11",
-}
-
 # Windows build map (build number range -> product name, marketing channel)
 WINDOWS_BUILD_MAP = [
     (10240, 10240, "Windows 10", "1507"),
@@ -59,6 +43,18 @@ WINDOWS_NT_MAP = {
     (6, 2): "Windows 8",
     (6, 3): "Windows 8.1",
     (10, 0): "Windows 10/11",
+}
+
+# Human readable aliases (macOS codenames)
+MACOS_ALIASES = {
+    # macOS codenames
+    "sonoma": "macOS 14",
+    "sequoia": "macOS 15",
+    "ventura": "macOS 13",
+    "monterey": "macOS 12",
+    "big sur": "macOS 11",
+    "bigsur": "macOS 11",
+    "catalina": "macOS 10.15",
 }
 
 # macOS Darwin major version -> (product name, product version, codename)
