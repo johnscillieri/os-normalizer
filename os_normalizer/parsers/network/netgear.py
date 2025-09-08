@@ -3,7 +3,7 @@
 import re
 
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.IGNORECASE)
 NETGEAR_VER_RE = re.compile(
@@ -12,7 +12,7 @@ NETGEAR_VER_RE = re.compile(
 NETGEAR_MODEL_RE = re.compile(r"\b([RN][0-9]{3,4}[A-Z]?)\b", re.IGNORECASE)
 
 
-def parse_netgear(text: str, p: OSParse) -> OSParse:
+def parse_netgear(text: str, p: OSData) -> OSData:
     p.vendor = "Netgear"
     p.product = "Firmware"
     p.family = p.family or "network-os"
@@ -39,4 +39,3 @@ def parse_netgear(text: str, p: OSParse) -> OSParse:
 
     update_confidence(p, "minor" if p.precision == "major" else p.precision)
     return p
-

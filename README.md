@@ -21,7 +21,7 @@ pip install os-normalizer
 
 ## Usage
 
-The main entry point is the `normalize_os` function, which takes an string and an optional data dictionary and returns a structured `OSParse` result.
+The main entry point is the `normalize_os` function, which takes a string and an optional data dictionary and returns a structured `OSData` result.
 
 ### Basic Usage
 
@@ -68,7 +68,7 @@ print(result.product)  # IOS XE
 
 ## Models
 
-### OSParse
+### OSData
 
 Represents structured operating system information:
 

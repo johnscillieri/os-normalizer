@@ -7,7 +7,7 @@ from typing import Any
 
 
 @dataclass
-class OSParse:
+class OSData:
     """Structured representation of a parsed operating system."""
 
     # Core identity
@@ -43,4 +43,3 @@ class OSParse:
 
     # Canonical key for deduplication / indexing
     os_key: str | None = None
-

@@ -3,7 +3,7 @@
 import re
 
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 # Detection and parsing regex
 CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.IGNORECASE)
@@ -24,7 +24,7 @@ CISCO_EDITION_RE = re.compile(
 )
 
 
-def parse_cisco(text: str, p: OSParse) -> OSParse:
+def parse_cisco(text: str, p: OSData) -> OSData:
     p.vendor = "Cisco"
     p.family = p.family or "network-os"
 
@@ -94,4 +94,3 @@ def parse_cisco(text: str, p: OSParse) -> OSParse:
     # Boost confidence based on precision
     update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
     return p
-

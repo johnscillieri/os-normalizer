@@ -3,7 +3,7 @@
 import re
 
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 FORTI_RE = re.compile(r"\bforti(os|gate)\b", re.IGNORECASE)
 FORTI_VER_RE = re.compile(r"\bv?(\d+\.\d+(?:\.\d+)?)\b", re.IGNORECASE)
@@ -13,7 +13,7 @@ FORTI_MODEL_RE = re.compile(r"\b(FortiGate-?\d+[A-Z]?|FG-\d+[A-Z]?)\b", re.IGNOR
 FORTI_CHANNEL_RE = re.compile(r"\((GA|Patch|Beta)\)", re.IGNORECASE)
 
 
-def parse_fortinet(text: str, p: OSParse) -> OSParse:
+def parse_fortinet(text: str, p: OSData) -> OSData:
     p.vendor = "Fortinet"
     p.product = "FortiOS"
     p.family = p.family or "network-os"
@@ -54,4 +54,3 @@ def parse_fortinet(text: str, p: OSParse) -> OSParse:
 
     update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
     return p
-

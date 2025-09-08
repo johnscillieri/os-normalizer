@@ -5,7 +5,7 @@ from typing import Any
 
 from os_normalizer.constants import MACOS_ALIASES, MACOS_DARWIN_MAP
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 # Regex patterns used only by the macOS parser
 DARWIN_RE = re.compile(
@@ -18,8 +18,8 @@ MACOS_VER_FALLBACK_RE = re.compile(r"\bmacos\s?(\d+)(?:\.(\d+))?", re.IGNORECASE
 _PRECISION_ORDER = {"family": 0, "product": 1, "major": 2, "minor": 3, "patch": 4, "build": 5}
 
 
-def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with macOS-specific details."""
+def parse_macos(text: str, data: dict[str, Any], p: OSData) -> OSData:
+    """Populate an OSData instance with macOS-specific details."""
     t = text
     tl = t.lower()
 
@@ -44,7 +44,7 @@ def parse_macos(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     return p
 
 
-def _apply_alias_hint(tl: str, p: OSParse) -> None:
+def _apply_alias_hint(tl: str, p: OSData) -> None:
     for alias, normalized in MACOS_ALIASES.items():
         if alias in tl:
             parts = normalized.split()
@@ -53,7 +53,7 @@ def _apply_alias_hint(tl: str, p: OSParse) -> None:
                 p.precision = _max_precision(p.precision, "major")
 
 
-def _apply_darwin_mapping(t: str, p: OSParse) -> None:
+def _apply_darwin_mapping(t: str, p: OSData) -> None:
     m = DARWIN_RE.search(t)
     if not m:
         return
@@ -75,7 +75,7 @@ def _apply_darwin_mapping(t: str, p: OSParse) -> None:
         p.codename = code
 
 
-def _apply_version_fallback(t: str, p: OSParse) -> None:
+def _apply_version_fallback(t: str, p: OSData) -> None:
     if p.version_major:
         return
     mm = MACOS_VER_FALLBACK_RE.search(t)
@@ -89,7 +89,7 @@ def _apply_version_fallback(t: str, p: OSParse) -> None:
         p.precision = _max_precision(p.precision, "major")
 
 
-def _apply_codename_fallback(tl: str, p: OSParse) -> None:
+def _apply_codename_fallback(tl: str, p: OSData) -> None:
     if p.codename:
         return
     for dmaj, (_, ver, code) in MACOS_DARWIN_MAP.items():
@@ -109,4 +109,3 @@ def _apply_codename_fallback(tl: str, p: OSParse) -> None:
 
 def _max_precision(current: str, new_label: str) -> str:
     return new_label if _PRECISION_ORDER.get(new_label, 0) > _PRECISION_ORDER.get(current, 0) else current
-

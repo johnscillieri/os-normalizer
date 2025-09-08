@@ -3,7 +3,7 @@
 import re
 
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 HUAWEI_RE = re.compile(r"\bhuawei\b|\bvrp\b", re.IGNORECASE)
 HUAWEI_VER_RE = re.compile(r"\bV(\d{3})R(\d{3})C(\d+)(SPC\d+)?\b", re.IGNORECASE)
@@ -11,7 +11,7 @@ HUAWEI_RAWVER_RE = re.compile(r"\bV\d{3}R\d{3}C\d+(?:SPC\d+)?\b", re.IGNORECASE)
 HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A-Z-]*)\b", re.IGNORECASE)
 
 
-def parse_huawei(text: str, p: OSParse) -> OSParse:
+def parse_huawei(text: str, p: OSData) -> OSData:
     p.vendor = "Huawei"
     p.product = "VRP"
     p.family = p.family or "network-os"
@@ -36,4 +36,3 @@ def parse_huawei(text: str, p: OSParse) -> OSParse:
 
     update_confidence(p, p.precision if p.precision in ("minor", "build") else "major")
     return p
-

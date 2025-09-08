@@ -1,15 +1,15 @@
-"""Full OSParse object checks for representative samples"""
+"""Full OSData object checks for representative samples"""
 
 import pytest
 
-from os_normalizer import OSParse, normalize_os
+from os_normalizer import OSData, normalize_os
 
-FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
+FULL_OBJECT_CASES: list[tuple[str, dict | None, OSData]] = [
     # Windows — precise build, x64
     (
         "Windows NT 10.0 build 22631 Enterprise x64",
         None,
-        OSParse(
+        OSData(
             family="windows",
             vendor="Microsoft",
             product="Windows 11",
@@ -28,7 +28,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "macOS Sequoia",
         None,
-        OSParse(
+        OSData(
             family="macos",
             vendor="Apple",
             product="macOS",
@@ -43,7 +43,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "Windows NT 6.1 Build 7601 SP2 x86",
         None,
-        OSParse(
+        OSData(
             family="windows",
             vendor="Microsoft",
             product="Windows 7",
@@ -61,7 +61,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "Linux node 6.5.7-arch1-1",
         None,
-        OSParse(
+        OSData(
             family="linux",
             vendor=None,
             product="Linux",
@@ -76,7 +76,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "Linux host 5.4.0-70-generic",
         {"os_release": {"NAME": "Fedora Linux", "ID": "fedora", "VERSION_ID": "33"}},
-        OSParse(
+        OSData(
             family="linux",
             vendor="Fedora Project",
             product="Fedora Linux",
@@ -95,7 +95,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "Windows NT 6.1 Build 7601 Server Datacenter x64",
         None,
-        OSParse(
+        OSData(
             family="windows",
             vendor="Microsoft",
             product="Windows Server 2008 R2",
@@ -113,7 +113,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "Darwin 24.0.0; macOS Sequoia arm64",
         None,
-        OSParse(
+        OSData(
             family="macos",
             vendor="Apple",
             product="macOS",
@@ -131,7 +131,7 @@ FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     (
         "macOS Ventura Darwin 22.0.0 x86_64",
         None,
-        OSParse(
+        OSData(
             family="macos",
             vendor="Apple",
             product="macOS",
@@ -155,7 +155,7 @@ VERSION_ID="22.04.4"
 VERSION_CODENAME=jammy
 PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
         },
-        OSParse(
+        OSData(
             family="linux",
             vendor="Canonical",
             product="Ubuntu",
@@ -179,7 +179,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "Cisco IOS XE Software, Version 17.9.1a (Amsterdam) C9300-24T, universalk9, c9300-universalk9.17.9.1a.SPA.bin",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Cisco",
             product="IOS XE",
@@ -201,7 +201,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "Cisco Nexus Operating System (NX-OS) Software nxos.9.3(5).bin N9K-C93180YC-FX",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Cisco",
             product="NX-OS",
@@ -220,7 +220,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "Junos: 20.4R3-S3 jinstall-ex-4300-20.4R3-S3.tgz EX4300-48T",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Juniper",
             product="Junos",
@@ -239,7 +239,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "FortiGate-100F v7.2.7 build1600 (GA) FGT_7.2.7-build1600",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Fortinet",
             product="FortiOS",
@@ -260,7 +260,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "Huawei VRP V800R012C00SPC500 S5720-28X-SI-AC",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Huawei",
             product="VRP",
@@ -279,7 +279,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "NETGEAR Firmware V1.0.9.88_10.2.88 R7000",
         None,
-        OSParse(
+        OSData(
             family="network-os",
             vendor="Netgear",
             product="Firmware",
@@ -298,7 +298,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "iOS 17.5.1",
         None,
-        OSParse(
+        OSData(
             family="ios",
             vendor="Apple",
             product="iOS/iPadOS",
@@ -314,7 +314,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "Android 14 build UPB5.230623.003",
         None,
-        OSParse(
+        OSData(
             family="android",
             vendor="Google",
             product="Android",
@@ -328,7 +328,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "OpenBSD 7.5",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="OpenBSD",
             product="OpenBSD",
@@ -344,7 +344,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "FreeBSD 12.4-RELEASE",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="FreeBSD",
             product="FreeBSD",
@@ -361,7 +361,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "NetBSD 9.3",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="NetBSD",
             product="NetBSD",
@@ -377,7 +377,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "FreeBSD 13.2-RC1",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="FreeBSD",
             product="FreeBSD",
@@ -394,7 +394,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "FreeBSD 13.3-STABLE",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="FreeBSD",
             product="FreeBSD",
@@ -411,7 +411,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "OpenBSD 7.6 current",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="OpenBSD",
             product="OpenBSD",
@@ -428,7 +428,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
     (
         "NetBSD 10.0_BETA",
         None,
-        OSParse(
+        OSData(
             family="bsd",
             vendor="NetBSD",
             product="NetBSD",
@@ -445,7 +445,7 @@ PRETTY_NAME="Ubuntu 22.04.4 LTS"'''
 
 
 @pytest.mark.parametrize(("text", "data", "expected"), FULL_OBJECT_CASES)
-def test_full_osparse_objects(text: str, data: dict | None, expected: OSParse) -> None:
-    """Assert complete OSParse objects for representative inputs."""
+def test_full_osdata_objects(text: str, data: dict | None, expected: OSData) -> None:
+    """Assert complete OSData objects for representative inputs."""
     result = normalize_os(text, data)
     assert result == expected

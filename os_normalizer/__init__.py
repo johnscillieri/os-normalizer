@@ -1,9 +1,8 @@
-from .models import OSParse
+from .models import OSData
 from .os_normalizer import choose_best_fact, normalize_os
 
 __all__ = [
-    "OSParse",
+    "OSData",
     "choose_best_fact",
     "normalize_os",
 ]
-

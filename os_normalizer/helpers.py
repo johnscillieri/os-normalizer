@@ -4,7 +4,7 @@ import re
 from typing import Any
 
 from .constants import ARCH_SYNONYMS
-from .models import OSParse
+from .models import OSData
 
 
 def norm_arch(s: str | None) -> str | None:
@@ -47,8 +47,8 @@ def precision_from_parts(
     return "product"
 
 
-def canonical_key(p: OSParse) -> str:
-    """Generate a deterministic key for an OSParse instance.
+def canonical_key(p: OSData) -> str:
+    """Generate a deterministic key for an OSData instance.
 
     The function expects the object to have vendor, product, version_* and edition fields.
     """
@@ -92,7 +92,7 @@ def parse_os_release(blob_text: str) -> dict[str, Any]:
     return out
 
 
-def update_confidence(p: OSParse, precision: str) -> None:
+def update_confidence(p: OSData, precision: str) -> None:
     """Boost confidence based on the determined precision level.
 
     The mapping mirrors the original ad-hoc values used throughout the monolithic file.
@@ -105,4 +105,3 @@ def update_confidence(p: OSParse, precision: str) -> None:
         "product": 0.60,
     }
     p.confidence = max(p.confidence, boost_map.get(precision, 0.5))
-

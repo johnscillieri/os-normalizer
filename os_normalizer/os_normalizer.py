@@ -2,7 +2,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from os_normalizer.helpers import extract_arch_from_text
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 from os_normalizer.parsers.bsd import parse_bsd
 from os_normalizer.parsers.linux import parse_linux
 from os_normalizer.parsers.macos import parse_macos
@@ -77,12 +77,12 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
     return None, 0.0, ev
 
 
-def normalize_os(text: str, data: dict | None = None) -> OSParse:
+def normalize_os(text: str, data: dict | None = None) -> OSData:
     text = text.strip()
     data = data or {}
     t = text.lower()
 
-    p = OSParse()
+    p = OSData()
 
     # Family detection
     fam, base_conf, ev = detect_family(t, data)
@@ -112,7 +112,7 @@ def normalize_os(text: str, data: dict | None = None) -> OSParse:
     return p
 
 
-def choose_best_fact(candidates: list[OSParse]) -> OSParse:
+def choose_best_fact(candidates: list[OSData]) -> OSData:
     if not candidates:
         raise ValueError("No candidates")
     return sorted(
@@ -165,4 +165,3 @@ if __name__ == "__main__":
         print("----", s.get("text"))
         print(parsed)
         print()
-

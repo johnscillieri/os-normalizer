@@ -14,7 +14,7 @@ from os_normalizer.constants import (
     WINDOWS_NT_SERVER_MAP,
 )
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 # Regex patterns used only by the Windows parser
 WIN_EDITION_RE = re.compile(
@@ -26,8 +26,8 @@ WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 
 
-def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with Windows-specific details."""
+def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
+    """Populate an OSData instance with Windows-specific details."""
     p.kernel_name = "nt"
 
     # 1) Product and edition from free text
@@ -95,7 +95,7 @@ def _detect_edition(text: str) -> str | None:
     return m.group(1).title() if m else None
 
 
-def _parse_service_pack(text: str, p: OSParse) -> None:
+def _parse_service_pack(text: str, p: OSData) -> None:
     sp = WIN_SP_RE.search(text)
     if sp:
         p.version_patch = int(sp.group(1))
@@ -117,7 +117,7 @@ def _is_server_like(t: str) -> bool:
     )
 
 
-def _apply_nt_mapping(text: str, p: OSParse, server_like: bool) -> None:
+def _apply_nt_mapping(text: str, p: OSData, server_like: bool) -> None:
     nt = WIN_NT_RE.search(text)
     if not nt:
         return
@@ -133,7 +133,7 @@ def _apply_nt_mapping(text: str, p: OSParse, server_like: bool) -> None:
         p.product = product
 
 
-def _apply_build_mapping(text: str, p: OSParse) -> None:
+def _apply_build_mapping(text: str, p: OSData) -> None:
     m = WIN_BUILD_RE.search(text)
     if not m:
         return
@@ -156,7 +156,7 @@ def _apply_build_mapping(text: str, p: OSParse) -> None:
                 break
 
 
-def _finalize_precision_and_version(p: OSParse) -> None:
+def _finalize_precision_and_version(p: OSData) -> None:
     if p.version_build:
         p.precision = "build"
         return
@@ -173,4 +173,3 @@ def _finalize_precision_and_version(p: OSParse) -> None:
         p.precision = "product"
     else:
         p.precision = "family"
-

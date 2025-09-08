@@ -4,7 +4,7 @@ import re
 from typing import Any, Optional
 
 from os_normalizer.helpers import parse_os_release, update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 # Regex patterns used only by the Linux parser
 KERNEL_RE = re.compile(
@@ -17,8 +17,8 @@ LINUX_VER_FALLBACK_RE = re.compile(
 )
 
 
-def parse_linux(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with Linux‑specific details."""
+def parse_linux(text: str, data: dict[str, Any], p: OSData) -> OSData:
+    """Populate an OSData instance with Linux‑specific details."""
     p.kernel_name = "linux"
 
     osrel = _coerce_os_release(data.get("os_release")) if isinstance(data, dict) else None
@@ -55,7 +55,7 @@ def _extract_kernel_version(text: str) -> Optional[str]:
     return None
 
 
-def _apply_os_release(osrel: dict[str, Any], p: OSParse) -> None:
+def _apply_os_release(osrel: dict[str, Any], p: OSData) -> None:
     distro_id = osrel.get("ID")
     if distro_id:
         p.distro = str(distro_id).lower()
@@ -91,7 +91,7 @@ def _apply_os_release(osrel: dict[str, Any], p: OSParse) -> None:
         p.precision = "family"
 
 
-def _apply_version_id(vid: Any, p: OSParse) -> None:
+def _apply_version_id(vid: Any, p: OSData) -> None:
     if not vid:
         return
     parts = re.split(r"[.]+", str(vid))
@@ -119,4 +119,3 @@ def _vendor_for_distro(distro: Optional[str]) -> Optional[str]:
         "fedora": "Fedora Project",
     }
     return vendor_by_distro.get(distro) if distro else None
-

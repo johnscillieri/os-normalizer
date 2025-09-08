@@ -3,7 +3,7 @@
 import re
 
 from os_normalizer.helpers import update_confidence
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 JUNOS_RE = re.compile(r"\bjunos\b", re.IGNORECASE)
 JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.IGNORECASE)
@@ -11,7 +11,7 @@ JUNOS_PKG_RE = re.compile(r"\b(jinstall-[a-z0-9_.-]+\.tgz)\b", re.IGNORECASE)
 JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\w*|MX\d{2,3}\w*)\b", re.IGNORECASE)
 
 
-def parse_juniper(text: str, p: OSParse) -> OSParse:
+def parse_juniper(text: str, p: OSData) -> OSData:
     p.vendor = "Juniper"
     p.product = "Junos"
     p.family = p.family or "network-os"
@@ -40,4 +40,3 @@ def parse_juniper(text: str, p: OSParse) -> OSParse:
 
     update_confidence(p, p.precision if p.precision in ("build", "minor") else "major")
     return p
-

@@ -7,11 +7,11 @@ from os_normalizer.helpers import (
     precision_from_parts,
     update_confidence,
 )
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 
-def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with mobile device-specific details."""
+def parse_mobile(text: str, data: dict[str, Any], p: OSData) -> OSData:
+    """Populate an OSData instance with mobile device-specific details."""
     t = text.lower()
 
     # Detect if it's iOS or Android
@@ -35,4 +35,3 @@ def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     update_confidence(p, p.precision)
 
     return p
-

@@ -8,7 +8,7 @@ from os_normalizer.helpers import (
     precision_from_parts,
     update_confidence,
 )
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 FREEBSD_RE = re.compile(r"\bfreebsd\b", re.IGNORECASE)
 OPENBSD_RE = re.compile(r"\bopenbsd\b", re.IGNORECASE)
@@ -24,8 +24,8 @@ BSD_CHANNEL_RE = re.compile(
 )
 
 
-def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with BSD-specific details.
+def parse_bsd(text: str, data: dict[str, Any], p: OSData) -> OSData:
+    """Populate an OSData instance with BSD-specific details.
 
     Detects FreeBSD, OpenBSD, or NetBSD and extracts version numbers.
     """
@@ -67,4 +67,3 @@ def _extract_version(text: str) -> tuple[int | None, int | None, int | None]:
         patch = int(m.group(3)) if m.group(3) else None
         return major, minor, patch
     return parse_semver_like(text)
-

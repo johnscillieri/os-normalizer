@@ -1,7 +1,7 @@
 """Vendor-specific network OS parsers.
 
 Each module exposes a vendor detection regex (or set) and a `parse_*`
-function that mutates and returns an OSParse instance.
+function that mutates and returns an OSData instance.
 """
 
 from .cisco import (
@@ -15,7 +15,7 @@ from .fortinet import FORTI_RE, parse_fortinet
 from .huawei import HUAWEI_RE, parse_huawei
 from .netgear import NETGEAR_RE, parse_netgear
 
-from os_normalizer.models import OSParse
+from os_normalizer.models import OSData
 
 __all__ = [
     # Cisco
@@ -40,7 +40,7 @@ __all__ = [
 ]
 
 
-def parse_network(text: str, data: dict | None, p: OSParse) -> OSParse:
+def parse_network(text: str, data: dict | None, p: OSData) -> OSData:
     """Detect vendor and delegate to the correct parser."""
     tl = text.lower()
     if "cisco" in tl or CISCO_IOS_XE_RE.search(text) or CISCO_IOS_RE.search(text) or CISCO_NXOS_RE.search(text):
@@ -59,4 +59,3 @@ def parse_network(text: str, data: dict | None, p: OSParse) -> OSParse:
     p.product = p.product or "Network OS"
     p.precision = "family"
     return p
-
