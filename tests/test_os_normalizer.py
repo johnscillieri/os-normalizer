@@ -1,4 +1,6 @@
 import itertools as it
+from typing import Any
+
 import pytest
 
 from os_fingerprint import normalize_os
@@ -53,7 +55,7 @@ def windows_cases():
         ("Windows 7 Professional", "Windows 7"),
     ]
     for j, (s, prod) in enumerate(olds, 1):
-        exp = {"family": "windows", "product": prod, "kernel_name": "nt"}
+        exp: dict[str, Any] = {"family": "windows", "product": prod, "kernel_name": "nt"}
         if "Professional" in s:
             exp["edition"] = "Professional"
         if "Enterprise" in s:
@@ -83,7 +85,10 @@ def macos_cases():
                 "codename": MACOS_DARWIN_MAP[d][2],
                 # Version from map (10.15 has minor; others are major-only)
                 **(
-                    {"version_major": int(MACOS_DARWIN_MAP[d][1].split(".")[0]), "version_minor": int(MACOS_DARWIN_MAP[d][1].split(".")[1])}
+                    {
+                        "version_major": int(MACOS_DARWIN_MAP[d][1].split(".")[0]),
+                        "version_minor": int(MACOS_DARWIN_MAP[d][1].split(".")[1]),
+                    }
                     if "." in MACOS_DARWIN_MAP[d][1]
                     else {"version_major": int(MACOS_DARWIN_MAP[d][1])}
                 ),
@@ -195,7 +200,7 @@ def mobile_bsd_cases():
     i = 1600
     for v in ["Android 14 build UPB5.230623.003", "Android 13", "Android 12.1"]:
         i += 1
-        exp = {"family": "android", "product": "Android", "vendor": "Google"}
+        exp: dict[str, Any] = {"family": "android", "product": "Android", "vendor": "Google"}
         if "Android 14" in v:
             exp["version_major"] = 14
             exp["precision"] = "major"
@@ -256,7 +261,9 @@ def cisco_cases():
                 # Extracted version numbers and build info
                 "version_major": int(v.split(".")[0]),
                 "version_minor": int(v.split(".")[1]),
-                "version_patch": int(v.split(".")[2].rstrip("abcdefghijklmnopqrstuvwxyz")) if len(v.split(".")) >= 3 else None,
+                "version_patch": int(v.split(".")[2].rstrip("abcdefghijklmnopqrstuvwxyz"))
+                if len(v.split(".")) >= 3
+                else None,
                 "version_build": v,
                 "build_id": "SPA.bin",  # suffix check via endswith; asserted differently below
                 "precision": "build",
@@ -282,6 +289,7 @@ def cisco_cases():
         yield mk_obs(i, s), exp
     # Classic IOS
     import re
+
     for v in ["15.2(7)E3", "12.4(25d)"]:
         i += 1
         s = f"Cisco IOS Software, C2960 Software (C2960-LANBASEK9-M), Version {v}, RELEASE SOFTWARE (fc1)"
@@ -492,10 +500,7 @@ def test_linux_parsing(obs, exp):
 
 @pytest.mark.parametrize(
     "obs,exp",
-    [
-        pytest.param(obs, exp, id=_case_id("mobile-bsd", obs))
-        for obs, exp in mobile_bsd_cases()
-    ],
+    [pytest.param(obs, exp, id=_case_id("mobile-bsd", obs)) for obs, exp in mobile_bsd_cases()],
 )
 def test_mobile_bsd_parsing(obs, exp):
     _assert_normalization(obs, exp)
