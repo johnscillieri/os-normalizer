@@ -1,14 +1,14 @@
 from datetime import UTC, datetime
 from typing import Any
 
-from os_fingerprint.helpers import extract_arch_from_text
-from os_fingerprint.models import OSParse
-from os_fingerprint.parsers.bsd import parse_bsd
-from os_fingerprint.parsers.linux import parse_linux
-from os_fingerprint.parsers.macos import parse_macos
-from os_fingerprint.parsers.mobile import parse_mobile
-from os_fingerprint.parsers.network import parse_network
-from os_fingerprint.parsers.windows import parse_windows
+from os_normalizer.helpers import extract_arch_from_text
+from os_normalizer.models import OSParse
+from os_normalizer.parsers.bsd import parse_bsd
+from os_normalizer.parsers.linux import parse_linux
+from os_normalizer.parsers.macos import parse_macos
+from os_normalizer.parsers.mobile import parse_mobile
+from os_normalizer.parsers.network import parse_network
+from os_normalizer.parsers.windows import parse_windows
 
 PRECISION_ORDER = {
     "build": 6,
@@ -165,3 +165,4 @@ if __name__ == "__main__":
         print("----", s.get("text"))
         print(parsed)
         print()
+

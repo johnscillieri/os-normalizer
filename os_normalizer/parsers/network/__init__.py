@@ -15,7 +15,7 @@ from .fortinet import FORTI_RE, parse_fortinet
 from .huawei import HUAWEI_RE, parse_huawei
 from .netgear import NETGEAR_RE, parse_netgear
 
-from os_fingerprint.models import OSParse
+from os_normalizer.models import OSParse
 
 __all__ = [
     # Cisco
@@ -59,3 +59,4 @@ def parse_network(text: str, data: dict | None, p: OSParse) -> OSParse:
     p.product = p.product or "Network OS"
     p.precision = "family"
     return p
+

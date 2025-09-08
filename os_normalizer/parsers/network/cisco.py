@@ -2,8 +2,8 @@
 
 import re
 
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 # Detection and parsing regex
 CISCO_IOS_XE_RE = re.compile(r"(ios[\s-]?xe)", re.IGNORECASE)
@@ -83,7 +83,7 @@ def parse_cisco(text: str, p: OSParse) -> OSParse:
         p.edition = fl.group(1).lower()
 
     # Train codename
-    from os_fingerprint.constants import CISCO_TRAIN_NAMES
+    from os_normalizer.constants import CISCO_TRAIN_NAMES
 
     tl = text.lower()
     for train in CISCO_TRAIN_NAMES:

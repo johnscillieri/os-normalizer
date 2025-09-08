@@ -105,3 +105,4 @@ def update_confidence(p: OSParse, precision: str) -> None:
         "product": 0.60,
     }
     p.confidence = max(p.confidence, boost_map.get(precision, 0.5))
+

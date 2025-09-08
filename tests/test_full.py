@@ -2,7 +2,7 @@
 
 import pytest
 
-from os_fingerprint import OSParse, normalize_os
+from os_normalizer import OSParse, normalize_os
 
 FULL_OBJECT_CASES: list[tuple[str, dict | None, OSParse]] = [
     # Windows — precise build, x64

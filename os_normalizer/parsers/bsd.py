@@ -3,12 +3,12 @@
 import re
 from typing import Any
 
-from os_fingerprint.helpers import (
+from os_normalizer.helpers import (
     parse_semver_like,
     precision_from_parts,
     update_confidence,
 )
-from os_fingerprint.models import OSParse
+from os_normalizer.models import OSParse
 
 FREEBSD_RE = re.compile(r"\bfreebsd\b", re.IGNORECASE)
 OPENBSD_RE = re.compile(r"\bopenbsd\b", re.IGNORECASE)
@@ -67,3 +67,4 @@ def _extract_version(text: str) -> tuple[int | None, int | None, int | None]:
         patch = int(m.group(3)) if m.group(3) else None
         return major, minor, patch
     return parse_semver_like(text)
+

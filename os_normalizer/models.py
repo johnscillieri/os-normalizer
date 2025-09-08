@@ -43,3 +43,4 @@ class OSParse:
 
     # Canonical key for deduplication / indexing
     os_key: str | None = None
+

@@ -8,13 +8,13 @@ avoiding ambiguous NT mappings when server signals are present.
 import re
 from typing import Any, Optional
 
-from os_fingerprint.constants import (
+from os_normalizer.constants import (
     WINDOWS_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
 )
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 # Regex patterns used only by the Windows parser
 WIN_EDITION_RE = re.compile(
@@ -173,3 +173,4 @@ def _finalize_precision_and_version(p: OSParse) -> None:
         p.precision = "product"
     else:
         p.precision = "family"
+

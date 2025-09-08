@@ -2,8 +2,8 @@
 
 import re
 
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 FORTI_RE = re.compile(r"\bforti(os|gate)\b", re.IGNORECASE)
 FORTI_VER_RE = re.compile(r"\bv?(\d+\.\d+(?:\.\d+)?)\b", re.IGNORECASE)

@@ -1,10 +1,10 @@
-# OS Fingerprint
+# OS Normalizer
 
 A Python library for identifying and parsing operating system information from various sources.
 
 ## Overview
 
-The OS Fingerprint library is designed to parse raw operating system strings and JSON data to identify the OS family, version, architecture, and other details. It supports parsing of:
+The OS Normalizer library parses raw operating system strings and JSON data to identify the OS family, version, architecture, and other details. It supports parsing of:
 
 - Windows (NT builds, versions)
 - macOS (Darwin versions, codenames)
@@ -16,7 +16,7 @@ The OS Fingerprint library is designed to parse raw operating system strings and
 ## Installation
 
 ```bash
-pip install os-fingerprint
+pip install os-normalizer
 ```
 
 ## Usage
@@ -26,7 +26,7 @@ The main entry point is the `normalize_os` function, which takes an string and a
 ### Basic Usage
 
 ```python
-from os_fingerprint import normalize_os
+from os_normalizer import normalize_os
 
 # Parse the OS information
 result = normalize_os("Windows NT 10.0 build 22631 Enterprise x64")
@@ -38,7 +38,7 @@ print(result.version_major)  # 11
 ### Using Raw OS JSON Data
 
 ```python
-from os_fingerprint import normalize_os
+from os_normalizer import normalize_os
 
 # Fingerprint with both raw string and JSON data
 raw_os_string="Linux host 5.15.0-122-generic x86_64"
@@ -55,7 +55,7 @@ print(result.arch)  # x86_64
 ### Parsing Network Operating Systems
 
 ```python
-from os_fingerprint import normalize_os
+from os_normalizer import normalize_os
 
 # Parse Cisco IOS XE
 raw_os_string="Cisco IOS XE Software, Version 17.9.4a (Amsterdam) C9300-24T, universalk9, c9300-universalk9.17.09.04a.SPA.bin"

@@ -3,8 +3,8 @@
 import re
 from typing import Any, Optional
 
-from os_fingerprint.helpers import parse_os_release, update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import parse_os_release, update_confidence
+from os_normalizer.models import OSParse
 
 # Regex patterns used only by the Linux parser
 KERNEL_RE = re.compile(
@@ -119,3 +119,4 @@ def _vendor_for_distro(distro: Optional[str]) -> Optional[str]:
         "fedora": "Fedora Project",
     }
     return vendor_by_distro.get(distro) if distro else None
+

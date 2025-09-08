@@ -2,8 +2,8 @@
 
 import re
 
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 JUNOS_RE = re.compile(r"\bjunos\b", re.IGNORECASE)
 JUNOS_VER_RE = re.compile(r"\b(\d{1,2}\.\d{1,2}R\d+(?:-\w+\d+)?)\b", re.IGNORECASE)

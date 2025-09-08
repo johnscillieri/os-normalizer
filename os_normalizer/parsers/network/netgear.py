@@ -2,8 +2,8 @@
 
 import re
 
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 NETGEAR_RE = re.compile(r"\bnetgear\b|\bfirmware\b", re.IGNORECASE)
 NETGEAR_VER_RE = re.compile(

@@ -3,9 +3,9 @@
 import re
 from typing import Any
 
-from os_fingerprint.constants import MACOS_ALIASES, MACOS_DARWIN_MAP
-from os_fingerprint.helpers import update_confidence
-from os_fingerprint.models import OSParse
+from os_normalizer.constants import MACOS_ALIASES, MACOS_DARWIN_MAP
+from os_normalizer.helpers import update_confidence
+from os_normalizer.models import OSParse
 
 # Regex patterns used only by the macOS parser
 DARWIN_RE = re.compile(
@@ -109,3 +109,4 @@ def _apply_codename_fallback(tl: str, p: OSParse) -> None:
 
 def _max_precision(current: str, new_label: str) -> str:
     return new_label if _PRECISION_ORDER.get(new_label, 0) > _PRECISION_ORDER.get(current, 0) else current
+

@@ -3,8 +3,8 @@ from typing import Any
 
 import pytest
 
-from os_fingerprint import normalize_os
-from os_fingerprint.constants import MACOS_DARWIN_MAP
+from os_normalizer import normalize_os
+from os_normalizer.constants import MACOS_DARWIN_MAP
 
 
 def mk_obs(i, raw, json=None):

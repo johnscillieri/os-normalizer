@@ -84,3 +84,4 @@ MACOS_DARWIN_MAP = {
 
 # Cisco train names (used for codename detection)
 CISCO_TRAIN_NAMES = {"Everest", "Fuji", "Gibraltar", "Amsterdam", "Denali"}
+

@@ -2,12 +2,12 @@
 
 from typing import Any
 
-from os_fingerprint.helpers import (
+from os_normalizer.helpers import (
     parse_semver_like,
     precision_from_parts,
     update_confidence,
 )
-from os_fingerprint.models import OSParse
+from os_normalizer.models import OSParse
 
 
 def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
@@ -35,3 +35,4 @@ def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     update_confidence(p, p.precision)
 
     return p
+

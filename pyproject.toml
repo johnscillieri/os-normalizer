@@ -1,5 +1,5 @@
 [project]
-name = "os-fingerprint"
+name = "os-normalizer"
 version = "0.1.0"
 description = "Add your description here"
 readme = "README.md"
