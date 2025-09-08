@@ -2,6 +2,7 @@ from datetime import UTC, datetime
 from typing import Any
 
 from os_normalizer.helpers import extract_arch_from_text
+from os_normalizer.cpe import build_cpe23
 from os_normalizer.models import OSData
 from os_normalizer.parsers.bsd import parse_bsd
 from os_normalizer.parsers.linux import parse_linux
@@ -108,6 +109,13 @@ def normalize_os(text: str, data: dict | None = None) -> OSData:
     # Fallback arch from text if not already set elsewhere
     if not p.arch:
         p.arch = extract_arch_from_text(text)
+
+    # Populate canonical os_key as CPE 2.3
+    try:
+        p.os_key = build_cpe23(p)
+    except Exception:
+        # Be resilient: leave unset on any unexpected error
+        p.os_key = None
 
     return p
 

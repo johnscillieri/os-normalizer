@@ -42,4 +42,68 @@ class OSData:
     evidence: dict[str, Any] = field(default_factory=dict)
 
     # Canonical key for deduplication / indexing
-    os_key: str | None = None
+    os_key: str | None = field(default=None, compare=False)
+
+    def __str__(self) -> str:  # pragma: no cover - formatting helper
+        parts: list[str] = []
+
+        # Prefer vendor + product; fallback to pretty_name; then family
+        name_bits = [x for x in (self.vendor, self.product) if x]
+        if name_bits:
+            parts.append(" ".join(name_bits))
+        elif self.pretty_name:
+            parts.append(self.pretty_name)
+        else:
+            parts.append(self.family or "Unknown OS")
+
+        # Version string (major[.minor[.patch]]) and optional build
+        ver_chunks: list[str] = []
+        if self.version_major is not None:
+            ver = str(self.version_major)
+            if self.version_minor is not None:
+                ver += f".{self.version_minor}"
+                if self.version_patch is not None:
+                    ver += f".{self.version_patch}"
+            ver_chunks.append(ver)
+        if self.version_build:
+            ver_chunks.append(f"build {self.version_build}")
+        if ver_chunks:
+            parts.append(" ".join(ver_chunks))
+
+        # Edition (e.g., Enterprise, LTSC)
+        if self.edition:
+            parts.append(self.edition)
+
+        # Codename and/or channel in parentheses
+        codchan = ", ".join([x for x in (self.codename, self.channel) if x])
+        if codchan:
+            parts.append(f"({codchan})")
+
+        # Architecture
+        if self.arch:
+            parts.append(self.arch)
+
+        # Kernel info
+        kernel_bits = " ".join([x for x in (self.kernel_name, self.kernel_version) if x])
+        if kernel_bits:
+            parts.append(f"[kernel: {kernel_bits}]")
+
+        # Hardware model (common for network devices)
+        if self.hw_model:
+            parts.append(f"[hw: {self.hw_model}]")
+
+        # Separate build identifier if distinct from version_build
+        if self.build_id and self.build_id != self.version_build:
+            parts.append(f"[build: {self.build_id}]")
+
+        # Precision/confidence summary
+        if self.precision and self.precision != "unknown":
+            parts.append(f"{{{self.precision}:{self.confidence:.2f}}}")
+        elif self.confidence:
+            parts.append(f"{{{self.confidence:.2f}}}")
+
+        return " ".join(parts)
+
+    def __repr__(self) -> str:  # pragma: no cover - formatting helper
+        # Delegate to __str__ for concise, human-friendly debug output
+        return f"OSData({str(self)})"

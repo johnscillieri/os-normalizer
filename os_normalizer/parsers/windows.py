@@ -24,6 +24,8 @@ WIN_EDITION_RE = re.compile(
 WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
+WIN_FULL_NT_BUILD_RE = re.compile(r"\b(10)\.(0)\.(\d+)(?:\.(\d+))?\b")
+WIN_CHANNEL_RE = re.compile(r"\b(20H2|21H2|22H2|23H2|24H2|19H2|18H2|17H2|2004|1909|1809|1709|1511|1507)\b", re.IGNORECASE)
 
 
 def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
@@ -41,13 +43,16 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     server_like = _is_server_like(text.lower())
     _apply_nt_mapping(text, p, server_like)
 
-    # 4) Build number + marketing channel
+    # 4) Full kernel version (e.g., 10.0.22621.2715) + channel token if present
+    _apply_full_kernel_and_channel(text, p)
+
+    # 5) Build number + marketing channel (fallback when only 'build 22631' is present)
     _apply_build_mapping(text, p)
 
-    # 5) Precision and version_major if applicable
+    # 6) Precision and version_major if applicable
     _finalize_precision_and_version(p)
 
-    # 6) Vendor + confidence
+    # 7) Vendor + confidence
     p.vendor = "Microsoft"
     update_confidence(p, p.precision)
     return p
@@ -154,6 +159,23 @@ def _apply_build_mapping(text: str, p: OSData) -> None:
                 p.product = product_name
                 p.channel = marketing
                 break
+
+
+def _apply_full_kernel_and_channel(text: str, p: OSData) -> None:
+    # Full NT kernel version, e.g., 10.0.22621.2715
+    m = WIN_FULL_NT_BUILD_RE.search(text)
+    if m:
+        build = m.group(3)
+        suffix = m.group(4)
+        p.version_build = p.version_build or build
+        p.kernel_version = f"10.0.{build}{('.' + suffix) if suffix else ''}"
+        # Record evidence for NT 10.0 if not set via NT mapping
+        p.evidence.setdefault("nt_version", "10.0")
+
+    # Marketing channel token in free text, e.g., 22H2 (case-insensitive)
+    ch = WIN_CHANNEL_RE.search(text)
+    if ch and not p.channel:
+        p.channel = ch.group(1).upper()
 
 
 def _finalize_precision_and_version(p: OSData) -> None:
