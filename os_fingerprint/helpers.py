@@ -3,7 +3,8 @@
 import re
 from typing import Any
 
-from os_fingerprint.constants import ARCH_SYNONYMS
+from .constants import ARCH_SYNONYMS
+from .models import OSParse
 
 
 def norm_arch(s: str | None) -> str | None:
@@ -46,7 +47,7 @@ def precision_from_parts(
     return "product"
 
 
-def canonical_key(p: Any) -> str:
+def canonical_key(p: OSParse) -> str:
     """Generate a deterministic key for an OSParse instance.
 
     The function expects the object to have vendor, product, version_* and edition fields.
@@ -59,7 +60,7 @@ def canonical_key(p: Any) -> str:
     return f"{vendor}:{product}:{version}:{edition}:{codename}"
 
 
-# Regex for extracting an architecture token from free‑form text
+# Regex for extracting an architecture token from free-form text
 ARCH_TEXT_RE = re.compile(r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le)\b", re.IGNORECASE)
 
 
@@ -91,10 +92,10 @@ def parse_os_release(blob_text: str) -> dict[str, Any]:
     return out
 
 
-def update_confidence(p: Any, precision: str) -> None:
+def update_confidence(p: OSParse, precision: str) -> None:
     """Boost confidence based on the determined precision level.
 
-    The mapping mirrors the original ad‑hoc values used throughout the monolithic file.
+    The mapping mirrors the original ad-hoc values used throughout the monolithic file.
     """
     boost_map = {
         "build": 0.85,

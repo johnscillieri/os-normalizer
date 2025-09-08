@@ -11,7 +11,7 @@ from os_fingerprint.models import OSParse
 
 
 def parse_mobile(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with mobile device‑specific details."""
+    """Populate an OSParse instance with mobile device-specific details."""
     t = text.lower()
 
     # Detect if it's iOS or Android

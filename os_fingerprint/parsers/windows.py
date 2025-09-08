@@ -28,19 +28,18 @@ WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 
 def parse_windows(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     """Populate an OSParse instance with Windows-specific details."""
-    t = text.lower()
     p.kernel_name = "nt"
 
     # 1) Product and edition from free text
-    p.product = p.product or _detect_product_from_text(t)
+    p.product = p.product or _detect_product_from_text(text.lower())
     p.edition = p.edition or _detect_edition(text)
 
     # 2) Service Pack
     _parse_service_pack(text, p)
 
     # 3) NT version mapping (client vs server)
-    server_like = _is_server_like(t)
-    _apply_nt_mapping(text, t, p, server_like)
+    server_like = _is_server_like(text.lower())
+    _apply_nt_mapping(text, p, server_like)
 
     # 4) Build number + marketing channel
     _apply_build_mapping(text, p)
@@ -91,7 +90,7 @@ def _detect_product_from_text(t: str) -> str:
     return "Unknown"
 
 
-def _detect_edition(text: str) -> Optional[str]:
+def _detect_edition(text: str) -> str | None:
     m = WIN_EDITION_RE.search(text)
     return m.group(1).title() if m else None
 
@@ -118,7 +117,7 @@ def _is_server_like(t: str) -> bool:
     )
 
 
-def _apply_nt_mapping(text: str, t: str, p: OSParse, server_like: bool) -> None:
+def _apply_nt_mapping(text: str, p: OSParse, server_like: bool) -> None:
     nt = WIN_NT_RE.search(text)
     if not nt:
         return

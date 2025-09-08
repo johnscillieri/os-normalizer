@@ -1,7 +1,7 @@
 """BSD specific parsing logic (refactored, variant + channel handling)."""
 
 import re
-from typing import Any, Optional, Tuple
+from typing import Any
 
 from os_fingerprint.helpers import (
     parse_semver_like,
@@ -25,7 +25,7 @@ BSD_CHANNEL_RE = re.compile(
 
 
 def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
-    """Populate an OSParse instance with BSD‑specific details.
+    """Populate an OSParse instance with BSD-specific details.
 
     Detects FreeBSD, OpenBSD, or NetBSD and extracts version numbers.
     """
@@ -59,7 +59,7 @@ def parse_bsd(text: str, data: dict[str, Any], p: OSParse) -> OSParse:
     return p
 
 
-def _extract_version(text: str) -> Tuple[Optional[int], Optional[int], Optional[int]]:
+def _extract_version(text: str) -> tuple[int | None, int | None, int | None]:
     m = VARIANT_VERSION_RE.search(text)
     if m:
         major = int(m.group(1))
