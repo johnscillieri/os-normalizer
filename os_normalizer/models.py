@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, fields as dataclass_fields
 from typing import Any
 
 
@@ -107,3 +107,55 @@ class OSData:
     def __repr__(self) -> str:  # pragma: no cover - formatting helper
         # Delegate to __str__ for concise, human-friendly debug output
         return f"OSData({str(self)})"
+
+    def full(self, none_str="<None>") -> str:  # pragma: no cover - formatting helper
+        """Return all fields in a neat two-column, aligned layout.
+
+        Example:
+        family        : linux
+        vendor        : Canonical
+        ...
+        If a field is None, prints "<None>" or none_val.
+        """
+        # Collect (name, value) pairs in declared order
+        rows: list[tuple[str, str]] = []
+        for f in dataclass_fields(self):
+            name = f.name
+            val = getattr(self, name)
+            if val is None:
+                sval = none_str
+            elif name == "confidence" and isinstance(val, (int, float)):
+                sval = f"{float(val):.2f}"
+            elif isinstance(val, list):
+                sval = ", ".join(str(x) for x in val)
+            elif isinstance(val, dict):
+                # Shallow, compact dict repr with sorted keys for stability
+                items = ", ".join(f"{k}={val[k]!r}" for k in sorted(val))
+                sval = "{" + items + "}"
+            else:
+                sval = str(val)
+            rows.append((name, sval))
+
+        width = max(len(name) for name, _ in rows) if rows else 0
+        lines = [f"{name:<{width}} : {sval}" for name, sval in rows]
+        return "\n".join(lines)
+
+
+if __name__ == "__main__":
+    x = OSData(
+        family="linux",
+        vendor="Fedora Project",
+        product="Fedora Linux",
+        version_major=33,
+        kernel_name="linux",
+        kernel_version="5.4.0-70-generic",
+        distro="fedora",
+        like_distros=[],
+        pretty_name="Fedora Linux",
+        precision="major",
+        confidence=0.7,
+        evidence={"hit": "linux"},
+    )
+    print(f"Normal: {x}")
+    print("\nFull:")
+    print(x.full(none_str=""))
