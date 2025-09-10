@@ -107,10 +107,16 @@ You can run tests with uv in a few ways:
 - Ephemeral runner (downloads pytest if needed):
   - `uvx pytest`
 - Use the project environment and dev dependencies declared in `pyproject.toml`:
-  - `uv run --with dev pytest`
+  - `uv run --group dev pytest`
 - Optional editable install for import paths:
   - `uv pip install -e .`
   - `uv run pytest`
+
+### Using Nox (with nox-uv)
+
+If you prefer repeatable sessions, this project includes Nox configured with the `nox-uv` plugin so virtualenvs are created via `uv`:
+
+- Run tests: `uv run nox`
 
 ## Contributing
 
