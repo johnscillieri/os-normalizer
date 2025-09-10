@@ -156,6 +156,4 @@ if __name__ == "__main__":
         confidence=0.7,
         evidence={"hit": "linux"},
     )
-    print(f"Normal: {x}")
-    print("\nFull:")
-    print(x.full(none_str=""))
+    print("Normal:", x, "\nFull:", x.full(none_str=""), sep="\n", end="\n\n")
