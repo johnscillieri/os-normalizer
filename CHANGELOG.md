@@ -3,7 +3,13 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
-## [Unreleased]
+## [0.3.2] - 2025-09-11
+
+- Added: More `pyproject.toml` metadata (description, keywords, classifiers, project URLs).
+- Added: `LICENSE` (MIT) and referenced it from project metadata.
+- Added: `RELEASING.md` with step-by-step TestPyPI/PyPI instructions.
+- Changed: Switched to Hatchling build backend via `[build-system]` in `pyproject.toml`.
+- Changed: Exclude dev artifacts from sdist (`tests/`, caches, lockfiles, egg-info).
 
 ## [0.3.1] - 2025-09-09
 
