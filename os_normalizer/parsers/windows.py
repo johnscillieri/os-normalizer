@@ -10,6 +10,7 @@ from typing import Any, Optional
 
 from os_normalizer.constants import (
     WINDOWS_BUILD_MAP,
+    WINDOWS_SERVER_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
 )
@@ -25,7 +26,10 @@ WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 WIN_FULL_NT_BUILD_RE = re.compile(r"\b(10)\.(0)\.(\d+)(?:\.(\d+))?\b")
-WIN_CHANNEL_RE = re.compile(r"\b(20H2|21H2|22H2|23H2|24H2|19H2|18H2|17H2|2004|1909|1809|1709|1511|1507)\b", re.IGNORECASE)
+WIN_CHANNEL_RE = re.compile(
+    r"\b(24H2|23H2|22H2|21H2|21H1|20H2|2004|1909|1903|1809|1803|1709|1703|1607|1511|1507)\b",
+    re.IGNORECASE,
+)
 
 
 def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
@@ -47,7 +51,7 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     _apply_full_kernel_and_channel(text, p)
 
     # 5) Build number + marketing channel (fallback when only 'build 22631' is present)
-    _apply_build_mapping(text, p)
+    _apply_build_mapping(text, p, server_like)
 
     # 6) Precision and version_major if applicable
     _finalize_precision_and_version(p)
@@ -75,6 +79,8 @@ def _detect_product_from_text(t: str) -> str:
         return "Windows 98"
 
     # Server explicit names
+    if "windows server 2012 r2" in t:
+        return "Windows Server 2012 R2"
     if "windows server 2022" in t or "win2k22" in t or "win2022" in t:
         return "Windows Server 2022"
     if "windows server 2019" in t or "win2k19" in t or "win2019" in t:
@@ -83,6 +89,8 @@ def _detect_product_from_text(t: str) -> str:
         return "Windows Server 2016"
     if "windows server 2012" in t or "win2k12" in t or "win2012" in t:
         return "Windows Server 2012"
+    if "windows server 2008 r2" in t:
+        return "Windows Server 2008 R2"
     if "windows server 2008" in t or "win2k8" in t or "win2008" in t:
         return "Windows Server 2008"
     if "windows server 2003" in t or "win2k3" in t or "win2003" in t:
@@ -138,7 +146,7 @@ def _apply_nt_mapping(text: str, p: OSData, server_like: bool) -> None:
         p.product = product
 
 
-def _apply_build_mapping(text: str, p: OSData) -> None:
+def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> None:
     m = WIN_BUILD_RE.search(text)
     if not m:
         return
@@ -151,13 +159,25 @@ def _apply_build_mapping(text: str, p: OSData) -> None:
     else:
         p.kernel_version = None
 
-    # Only apply client build mapping if current product isn't an explicit Server
     is_server_product = isinstance(p.product, str) and "server" in p.product.lower()
-    if not is_server_product:
+    if is_server_product or server_like:
+        # Apply server build mapping; do not override explicit server product names
+        for lo, hi, product_name, marketing in WINDOWS_SERVER_BUILD_MAP:
+            if lo <= build_num <= hi:
+                if not p.product or p.product in ("Windows", "Windows 10/11"):
+                    p.product = product_name
+                # Only set channel for modern Server (2016+)
+                if build_num >= 14393:
+                    p.channel = p.channel or marketing
+                break
+    else:
+        # Apply client build mapping
         for lo, hi, product_name, marketing in WINDOWS_BUILD_MAP:
             if lo <= build_num <= hi:
-                p.product = product_name
-                p.channel = marketing
+                # Only use build map to set product for Windows 10/11 trains
+                if build_num >= 10240:
+                    p.product = product_name
+                    p.channel = p.channel or marketing
                 break
 
 

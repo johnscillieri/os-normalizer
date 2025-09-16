@@ -17,7 +17,7 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 10", "precision": "build"},
     ),
     (
-        "Windows NT 6.1 Build 7601 SP2 x86",
+        "Windows NT 6.1 Build 7601 SP1 x86",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 7", "precision": "build"},
     ),
     (
@@ -29,7 +29,7 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
     ),
     (
-        "Win7 SP2 x86",
+        "Win7 SP1 x86",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"}
     ),
     (
@@ -101,11 +101,11 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 98"}
     ),
     (
-        "Windows NT 6.4 Build 25395 Windows 11 IoT Enterprise LTSC x86_64",
+        "Windows NT 10.0 Build 25395 Windows 11 IoT Enterprise LTSC x86_64",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"},
     ),
     (
-        "Windows NT 6.4 Build 10586 Professional x64",
+        "Windows NT 10.0 Build 10586 Professional x64",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"},
     ),
     (
@@ -117,7 +117,7 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"},
     ),
     (
-        "Windows NT 5.0 Build 3790.0 Professional x86",
+        "Windows NT 5.0 Build 2195 Professional x86",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 2000"},
     ),
     (
@@ -150,7 +150,7 @@ WINDOWS_CASES = [
     ),
     (
         "Windows Server 2012 R2 Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012"},
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2"},
     ),
     (
         "Windows NT 10.0 build 19045 Pro x64",
@@ -165,7 +165,7 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"},
     ),
     (
-        "Windows NT 6.1 SP2 Build 7601 Professional x86",
+        "Windows NT 6.1 SP1 Build 7601 Professional x86",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"},
     ),
 
@@ -187,7 +187,7 @@ WINDOWS_CASES = [
         {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2", "precision": "build"},
     ),
     (
-        "Windows NT 10.0 SP2 Build 19045 Pro x64",
+        "Windows NT 10.0 Build 19045 Pro x64",
         {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
     ),
 ]

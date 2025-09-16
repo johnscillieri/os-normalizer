@@ -17,8 +17,28 @@ ARCH_SYNONYMS = {
 }
 
 # Windows build map (build number range -> product name, marketing channel)
+# Notes:
+# - This focuses on common client builds; server detection is handled separately
+#   and this map is not applied if a server product was already detected.
+# - Marketing/channel labels use common public naming where applicable
+#   (e.g., 21H2/22H2 for Windows 10/11, RTM/SPx for older releases).
 WINDOWS_BUILD_MAP = [
-    # Windows 10
+    # NT era (pre-Windows 10)
+    (1381, 1381, "Windows NT 4.0", "RTM"),
+    (2195, 2195, "Windows 2000", "RTM"),
+    (2600, 2600, "Windows XP", "RTM"),
+    # NT 5.2 builds are ambiguous (XP x64 vs Server 2003); keep consistent label
+    (3790, 3790, "Windows XP x64/Server 2003", "RTM"),
+    # Vista/7/8/8.1
+    (6000, 6000, "Windows Vista", "RTM"),
+    (6001, 6001, "Windows Vista", "SP1"),
+    (6002, 6002, "Windows Vista", "SP2"),
+    (7600, 7600, "Windows 7", "RTM"),
+    (7601, 7601, "Windows 7", "SP1"),
+    (9200, 9200, "Windows 8", "RTM"),
+    (9600, 9600, "Windows 8.1", "RTM"),
+
+    # Windows 10 (builds and marketing versions)
     (10240, 10240, "Windows 10", "1507"),
     (10586, 10586, "Windows 10", "1511"),
     (14393, 14393, "Windows 10", "1607"),
@@ -28,9 +48,10 @@ WINDOWS_BUILD_MAP = [
     (17763, 17763, "Windows 10", "1809"),
     (18362, 18363, "Windows 10", "1903/1909"),
     (19041, 19045, "Windows 10", "2004/20H2/21H1/21H2/22H2"),
+
     # Windows 11
     (22000, 22000, "Windows 11", "21H2"),
-    (22621, 22630, "Windows 11", "22H2"),
+    (22621, 22621, "Windows 11", "22H2"),
     (22631, 25999, "Windows 11", "23H2"),
     (26100, 26199, "Windows 11", "24H2"),
 ]
@@ -82,6 +103,27 @@ MACOS_DARWIN_MAP = {
     24: ("macOS", "15", "Sequoia"),
 }
 
+# Windows Server build map (build number range -> product name, marketing channel)
+# This is consulted only when the input looks server-like or when an explicit
+# Windows Server product is already detected. Client mapping will not override
+# explicit server detections.
+WINDOWS_SERVER_BUILD_MAP = [
+    # Legacy server releases aligned with Vista/7/8/8.1
+    (3790, 3790, "Windows Server 2003", "RTM"),
+    (6001, 6001, "Windows Server 2008", "RTM"),  # 6001 corresponds to 2008 RTM
+    (6002, 6002, "Windows Server 2008", "SP2"),
+    (7600, 7600, "Windows Server 2008 R2", "RTM"),
+    (7601, 7601, "Windows Server 2008 R2", "SP1"),
+    (9200, 9200, "Windows Server 2012", "RTM"),
+    (9600, 9600, "Windows Server 2012 R2", "RTM"),
+
+    # NT 10.0 based server releases
+    (14393, 14393, "Windows Server 2016", "1607"),
+    (17763, 17763, "Windows Server 2019", "1809"),
+    (20348, 20348, "Windows Server 2022", "21H2"),
+    # Windows Server 2025 (vNext) uses the 26100 train alongside client 24H2
+    (26100, 26199, "Windows Server 2025", "24H2"),
+]
+
 # Cisco train names (used for codename detection)
 CISCO_TRAIN_NAMES = {"Everest", "Fuji", "Gibraltar", "Amsterdam", "Denali"}
-
