@@ -10,185 +10,524 @@ from os_normalizer import normalize_os
 # Test Cases Grouped by OS Family (Clean & Readable)
 # ----------------------------------------------------------------------
 
-# fmt: off
 WINDOWS_CASES = [
     (
         "Windows NT 10.0 build 19044 Enterprise x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "precision": "build",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19044",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+        },
     ),
     (
         "Windows NT 6.1 Build 7601 SP1 x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 7",
+            "precision": "build",
+            "arch": "x86",
+            "kernel_name": "nt",
+            "kernel_version": "6.1.7601",
+        },
     ),
     (
         "Windows NT 6.3 Build 9600 Professional x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 8.1", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 8.1",
+            "precision": "build",
+            "arch": "x86_64",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "6.3.9600",
+        },
     ),
     (
         "Windows 11 Pro x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11", "arch": "x86_64", "kernel_name": "nt"},
     ),
     (
         "Win7 SP1 x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7", "arch": "x86", "kernel_name": "nt"},
     ),
     (
         "Windows 10 Home x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Home",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows NT 6.2 Build 9200 Enterprise x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 8"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 8",
+            "arch": "x86",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "6.2.9200",
+        },
     ),
     (
         "Windows Server 2019 Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2019"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2019",
+            "arch": "x86_64",
+            "edition": "Datacenter",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows 7 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 7",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows NT 10.0 build 22631 Pro ARM64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "arm64",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.22631",
+            "channel": "23H2",
+            "edition": "Professional",
+        },
     ),
     (
         "Windows NT 5.1 Build 2600 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows XP"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows XP",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "5.1.2600",
+        },
     ),
     (
         "Windows NT 5.2 Build 3790 Server x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2003"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2003",
+            "arch": "x86_64",
+            "kernel_name": "nt",
+            "kernel_version": "5.2.3790",
+        },
     ),
     (
         "Windows NT 6.0 Build 6000 Enterprise x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Vista"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Vista",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "6.0.6000",
+        },
     ),
     (
         "Windows NT 10.0 build 19041 Home x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Home",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19041",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+        },
     ),
     (
         "Windows NT 10.0 build 19042 Pro x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19042",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+            "edition": "Professional",
+        },
     ),
     (
         "Windows NT 10.0 build 19043 Education x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Education",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19043",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+        },
     ),
     (
         "Windows Server 2016 Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2016"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2016",
+            "arch": "x86_64",
+            "edition": "Datacenter",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Win11 Pro ARM64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11", "arch": "arm64", "kernel_name": "nt"},
     ),
     (
         "Windows NT 5.0 Build 2195 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 2000"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 2000",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "5.0.2195",
+        },
     ),
     (
         "Windows NT 4.0 Build 1381 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows NT 4.0"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows NT 4.0",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "4.0.1381",
+        },
     ),
     (
         "Windows ME Build 3000 Home x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows ME"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows ME", "arch": "x86", "edition": "Home"},
     ),
     (
         "Windows 98 Build 1998 Pro x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 98"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 98", "arch": "x86"},
     ),
     (
         "Windows NT 10.0 Build 25395 Windows 11 IoT Enterprise LTSC x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.25395",
+            "channel": "23H2",
+        },
     ),
     (
         "Windows NT 10.0 Build 10586 Professional x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.10586",
+            "channel": "1511",
+        },
     ),
     (
         "Windows NT 6.2 Build 9200 Enterprise N x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 8"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 8",
+            "arch": "x86",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "6.2.9200",
+        },
     ),
     (
         "Windows NT 6.1 Build 7600 Professional x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 7",
+            "arch": "x86_64",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "6.1.7600",
+        },
     ),
     (
         "Windows NT 5.0 Build 2195 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 2000"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 2000",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows NT 10.0 build 26100 Pro x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "x86_64",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.26100",
+            "channel": "24H2",
+            "edition": "Professional",
+        },
     ),
     (
         "Windows 11 Enterprise x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows 11 Home ARM64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "arm64",
+            "edition": "Home",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows 10 Pro x86_64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10", "arch": "x86_64", "kernel_name": "nt"},
     ),
     (
-        "Windows 10 Enterprise x64", {
-        "family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        "Windows 10 Enterprise x64",
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows Server 2022 Standard x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2022"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2022",
+            "arch": "x86_64",
+            "edition": "Standard",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows Server 2019 Standard x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2019"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2019",
+            "arch": "x86_64",
+            "edition": "Standard",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows Server 2012 R2 Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2"},
-    ),
-    (
-        "Windows NT 10.0 build 19045 Pro x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2012 R2",
+            "arch": "x86_64",
+            "edition": "Datacenter",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows NT 10.0 build 22631 Enterprise x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 11"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 11",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.22631",
+            "channel": "23H2",
+        },
     ),
     (
         "Windows NT 10.0 build 19045 Enterprise x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "arch": "x86_64",
+            "edition": "Enterprise",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19045",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+        },
     ),
     (
         "Windows NT 6.1 SP1 Build 7601 Professional x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 7"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 7",
+            "arch": "x86",
+            "edition": "Professional",
+            "kernel_name": "nt",
+            "kernel_version": "6.1.7601",
+        },
     ),
-
     # Explicit server variants for ambiguous NT versions
     (
         "Windows NT 6.1 Build 7601 Server Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2008 R2", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2008 R2",
+            "precision": "build",
+            "arch": "x86_64",
+            "edition": "Datacenter",
+            "kernel_name": "nt",
+        },
     ),
     (
         "Windows NT 6.0 Build 6001 Server Standard x86",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2008", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2008",
+            "precision": "build",
+            "arch": "x86",
+            "edition": "Standard",
+            "kernel_name": "nt",
+            "kernel_version": "6.0.6001",
+        },
     ),
     (
         "Windows NT 6.2 Build 9200 Server Standard x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2012",
+            "precision": "build",
+            "arch": "x86_64",
+            "edition": "Standard",
+            "kernel_name": "nt",
+            "kernel_version": "6.2.9200",
+        },
     ),
     (
         "Windows NT 6.3 Build 9600 Server Datacenter x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows Server 2012 R2", "precision": "build"},
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2012 R2",
+            "precision": "build",
+            "arch": "x86_64",
+            "edition": "Datacenter",
+            "kernel_name": "nt",
+            "kernel_version": "6.3.9600",
+        },
     ),
     (
         "Windows NT 10.0 Build 19045 Pro x64",
-        {"family": "windows", "vendor": "Microsoft", "product": "Windows 10"}
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows 10",
+            "edition": "Professional",
+            "arch": "x86_64",
+            "kernel_name": "nt",
+            "kernel_version": "10.0.19045",
+            "channel": "2004/20H2/21H1/21H2/22H2",
+        },
+    ),
+    # Server build mapping (NT 10.0+)
+    (
+        "Windows NT 10.0 build 14393 Server Datacenter x64",
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2016",
+            "precision": "build",
+            "kernel_version": "10.0.14393",
+            "channel": "1607",
+        },
+    ),
+    (
+        "Windows NT 10.0 build 17763 Server Standard x64",
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2019",
+            "precision": "build",
+            "kernel_version": "10.0.17763",
+            "channel": "1809",
+        },
+    ),
+    (
+        "Windows NT 10.0 build 20348 Server Datacenter x64",
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2022",
+            "precision": "build",
+            "kernel_version": "10.0.20348",
+            "channel": "21H2",
+        },
+    ),
+    (
+        "Windows NT 10.0 build 26100 Server Datacenter x64",
+        {
+            "family": "windows",
+            "vendor": "Microsoft",
+            "product": "Windows Server 2025",
+            "precision": "build",
+            "kernel_version": "10.0.26100",
+            "channel": "24H2",
+        },
     ),
 ]
 
@@ -221,12 +560,12 @@ MACOS_CASES = [
 LINUX_CASES = [
     (
         "Linux host 5.15.0-122-generic x86_64",
-        {"family": "linux", "vendor": "canonical", "product": "Ubuntu"},
+        {"family": "linux", "vendor": "Canonical", "product": "Ubuntu"},
         {"os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy'},
     ),
     (
         "Linux host 5.10.0-30-amd64",
-        {"family": "linux", "vendor": "debian", "product": "Debian GNU/Linux"},
+        {"family": "linux", "vendor": "Debian", "product": "Debian GNU/Linux"},
         {"os_release": 'NAME="Debian GNU/Linux"\nID=debian\nVERSION_ID="12"\nVERSION_CODENAME=bookworm'},
     ),
     (
@@ -299,16 +638,9 @@ NETWORK_OS_CASES = [
         "Cisco Nexus Operating System (NX-OS) Software nxos.9.3(5).bin N9K-C93180YC-FX",
         {"family": "network-os", "product": "NX-OS"},
     ),
-    (
-        "Junos: 20.4R3-S3 jinstall-ex-4300-20.4R3-S3.tgz EX4300-48T",
-        {"family": "network-os", "vendor": "Juniper"}
-    ),
-    (
-        "FortiGate-100F v7.2.7 build1600 (GA) FGT_7.2.7-build1600",
-        {"family": "network-os", "vendor": "Fortinet"}
-    ),
+    ("Junos: 20.4R3-S3 jinstall-ex-4300-20.4R3-S3.tgz EX4300-48T", {"family": "network-os", "vendor": "Juniper"}),
+    ("FortiGate-100F v7.2.7 build1600 (GA) FGT_7.2.7-build1600", {"family": "network-os", "vendor": "Fortinet"}),
 ]
-# fmt: on
 
 
 # ----------------------------------------------------------------------
@@ -404,25 +736,10 @@ def test_static_os_fingerprinting(text: str, data: dict | None, expected: dict[s
     """
     result = normalize_os(text, data)
 
-    # Always check family
-    assert result.family == expected["family"], (
-        f"Input: '{text}' - Expected family='{expected['family']}', got '{result.family}'"
-    )
-
-    # Optional checks with helpful messages
-    if "vendor" in expected:
-        exp_vendor = (expected["vendor"] or "").lower()
-        act_vendor = (result.vendor or "").lower()
-        assert act_vendor == exp_vendor, f"Input: '{text}' - Expected vendor='{exp_vendor}', got '{act_vendor}'"
-
-    if "product" in expected:
-        exp_prod = (expected["product"] or "").lower()
-        act_prod = (result.product or "").lower()
-        assert act_prod == exp_prod, f"Input: '{text}' - Expected product='{exp_prod}', got '{act_prod}'"
-
-    if "precision" in expected:
-        assert result.precision == expected["precision"], (
-            f"Input: '{text}' - Expected precision='{expected['precision']}', got '{result.precision}'"
+    for key, expected_value in expected.items():
+        actual_value = getattr(result, key)
+        assert actual_value == expected_value, (
+            f"Input: '{text}' - Expected {key}='{expected_value}', got '{actual_value}'"
         )
 
     # Confidence checks (only if precision provided)

@@ -19,7 +19,7 @@ from os_normalizer.models import OSData
 
 # Regex patterns used only by the Windows parser
 WIN_EDITION_RE = re.compile(
-    r"\b(professional|enterprise|home|education|ltsc|datacenter)\b",
+    r"\b(professional|pro|enterprise|home|education|ltsc|datacenter|standard)\b",
     re.IGNORECASE,
 )
 WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
@@ -105,7 +105,20 @@ def _detect_product_from_text(t: str) -> str:
 
 def _detect_edition(text: str) -> str | None:
     m = WIN_EDITION_RE.search(text)
-    return m.group(1).title() if m else None
+    if not m:
+        return None
+    token = m.group(1).lower()
+    norm = {
+        "pro": "Professional",
+        "professional": "Professional",
+        "enterprise": "Enterprise",
+        "home": "Home",
+        "education": "Education",
+        "ltsc": "LTSC",
+        "datacenter": "Datacenter",
+        "standard": "Standard",
+    }
+    return norm.get(token, token.title())
 
 
 def _parse_service_pack(text: str, p: OSData) -> None:
@@ -153,11 +166,15 @@ def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> None:
     build_num = int(m.group(1))
     p.version_build = str(build_num)
 
-    # Kernel version for recent Windows 10/11
-    if (p.product == "Windows 10/11") or ("10.0" in text):
-        p.kernel_version = f"{10}.{0}.{build_num}"
-    else:
-        p.kernel_version = None
+    # Kernel version string
+    if not p.kernel_version:
+        if (p.product == "Windows 10/11") or ("10.0" in text):
+            p.kernel_version = f"10.0.{build_num}"
+        else:
+            nt_mm = WIN_NT_RE.search(text)
+            if nt_mm:
+                maj, minr = int(nt_mm.group(1)), int(nt_mm.group(2))
+                p.kernel_version = f"{maj}.{minr}.{build_num}"
 
     is_server_product = isinstance(p.product, str) and "server" in p.product.lower()
     if is_server_product or server_like:
