@@ -269,6 +269,37 @@ LINUX_OSDATA_CASES = [
             evidence={"hit": "linux"},
         ),
     ),
+    # Legacy generator coverage (Linux)
+    (
+        "Linux node 5.10.0-30-amd64",
+        None,
+        OSData(
+            family="linux",
+            product="Linux",
+            kernel_name="linux",
+            kernel_version="5.10.0-30-amd64",
+            arch="x86_64",
+            precision="family",
+            confidence=0.6,
+            evidence={"hit": "linux"},
+            os_key="cpe:2.3:o:linux:linux:*:*:*:*:*:*:x64:*",
+        ),
+    ),
+    (
+        "Linux node 4.18.0-553.8.1.el8_10.x86_64",
+        None,
+        OSData(
+            family="linux",
+            product="Linux",
+            kernel_name="linux",
+            kernel_version="4.18.0-553.8.1.el8_10.x86_64",
+            arch="x86_64",
+            precision="family",
+            confidence=0.6,
+            evidence={"hit": "linux"},
+            os_key="cpe:2.3:o:linux:linux:*:*:*:*:*:*:x64:*",
+        ),
+    ),
 ]
 
 

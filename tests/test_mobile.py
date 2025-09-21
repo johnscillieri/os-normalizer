@@ -52,6 +52,36 @@ MOBILE_OSDATA_CASES = [
             os_key="cpe:2.3:o:apple:iphone_os:16.7.6:*:*:*:*:*:*:*",
         ),
     ),
+    # Legacy generator coverage (mobile)
+    (
+        "Android 13",
+        None,
+        OSData(
+            family="android",
+            vendor="Google",
+            product="Android",
+            version_major=13,
+            precision="major",
+            confidence=0.7,
+            evidence={"hit": "android"},
+            os_key="cpe:2.3:o:google:android:13:*:*:*:*:*:*:*",
+        ),
+    ),
+    (
+        "Android 12.1",
+        None,
+        OSData(
+            family="android",
+            vendor="Google",
+            product="Android",
+            version_major=12,
+            version_minor=1,
+            precision="minor",
+            confidence=0.75,
+            evidence={"hit": "android"},
+            os_key="cpe:2.3:o:google:android:12.1:*:*:*:*:*:*:*",
+        ),
+    ),
 ]
 
 

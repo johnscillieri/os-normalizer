@@ -30,9 +30,7 @@ def parse_fortinet(text: str, p: OSData) -> OSData:
         if len(nums) >= 3:
             p.version_patch = int(nums[2])
         p.version_build = v
-        p.precision = (
-            "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
-        )
+        p.precision = "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
 
     bld = FORTI_BUILD_RE.search(text)
     if bld:

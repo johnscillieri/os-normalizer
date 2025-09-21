@@ -21,10 +21,7 @@ def test_str_windows_build():
         precision="build",
         confidence=0.85,
     )
-    assert str(p) == (
-        "Microsoft Windows 11 build 22631 Enterprise (23H2) x86_64 "
-        "[kernel: nt 10.0.22631] {build:0.85}"
-    )
+    assert str(p) == ("Microsoft Windows 11 build 22631 Enterprise (23H2) x86_64 [kernel: nt 10.0.22631] {build:0.85}")
 
 
 def test_str_linux_ubuntu_patch():
@@ -42,10 +39,7 @@ def test_str_linux_ubuntu_patch():
         precision="patch",
         confidence=0.8,
     )
-    assert str(p) == (
-        "Canonical Ubuntu 22.4.4 (LTS) x86_64 "
-        "[kernel: linux 5.15.0-122-generic] {patch:0.80}"
-    )
+    assert str(p) == ("Canonical Ubuntu 22.4.4 (LTS) x86_64 [kernel: linux 5.15.0-122-generic] {patch:0.80}")
 
 
 def test_str_macos_major_arm64():

@@ -10,9 +10,9 @@ def safe_id(text: str) -> str:
     return text.replace(" ", "_").replace("/", "_").replace(".", "_")[:30]
 
 
-def build_params(group: str, cases: list[tuple[str, dict | None, object]]) -> list[pytest.Param]:
+def build_params(group: str, cases: list[tuple[str, dict | None, object]]) -> list:
     """Create pytest parameters with stable IDs for a set of cases."""
-    params: list[pytest.Param] = []
+    params: list = []
     for idx, (raw, data, expected) in enumerate(cases):
         params.append(
             pytest.param(
@@ -23,4 +23,3 @@ def build_params(group: str, cases: list[tuple[str, dict | None, object]]) -> li
             )
         )
     return params
-

@@ -18,7 +18,7 @@ LINUX_VER_FALLBACK_RE = re.compile(
 
 
 def parse_linux(text: str, data: dict[str, Any], p: OSData) -> OSData:
-    """Populate an OSData instance with Linux‑specific details."""
+    """Populate an OSData instance with Linux-specific details."""
     p.kernel_name = "linux"
 
     osrel = _coerce_os_release(data.get("os_release")) if isinstance(data, dict) else None
@@ -37,7 +37,7 @@ def parse_linux(text: str, data: dict[str, Any], p: OSData) -> OSData:
     return p
 
 
-def _coerce_os_release(obj: Any) -> Optional[dict[str, Any]]:
+def _coerce_os_release(obj: Any) -> dict[str, Any] | None:
     if isinstance(obj, str):
         return parse_os_release(obj)
     if isinstance(obj, dict):
@@ -45,7 +45,7 @@ def _coerce_os_release(obj: Any) -> Optional[dict[str, Any]]:
     return None
 
 
-def _extract_kernel_version(text: str) -> Optional[str]:
+def _extract_kernel_version(text: str) -> str | None:
     m = KERNEL_RE.search(text)
     if m:
         return m.group(2)
@@ -86,7 +86,9 @@ def _apply_os_release(osrel: dict[str, Any], p: OSData) -> None:
     p.vendor = _vendor_for_distro(p.distro) if p.distro else p.vendor
 
     name = osrel.get("NAME")
-    p.product = (name if name else (p.distro or "Linux")).replace('"', "") if isinstance(name, str) else (p.distro or "Linux")
+    p.product = (
+        (name if name else (p.distro or "Linux")).replace('"', "") if isinstance(name, str) else (p.distro or "Linux")
+    )
 
     # Precision from version parts
     if p.version_patch is not None:
@@ -111,7 +113,7 @@ def _apply_version_id(vid: Any, p: OSData) -> None:
         p.version_patch = int(parts[2])
 
 
-def _vendor_for_distro(distro: Optional[str]) -> Optional[str]:
+def _vendor_for_distro(distro: str | None) -> str | None:
     vendor_by_distro = {
         "ubuntu": "Canonical",
         "debian": "Debian",
