@@ -37,7 +37,6 @@ WINDOWS_BUILD_MAP = [
     (7601, 7601, "Windows 7", "SP1"),
     (9200, 9200, "Windows 8", "RTM"),
     (9600, 9600, "Windows 8.1", "RTM"),
-
     # Windows 10 (builds and marketing versions)
     (10240, 10240, "Windows 10", "1507"),
     (10586, 10586, "Windows 10", "1511"),
@@ -48,7 +47,6 @@ WINDOWS_BUILD_MAP = [
     (17763, 17763, "Windows 10", "1809"),
     (18362, 18363, "Windows 10", "1903/1909"),
     (19041, 19045, "Windows 10", "2004/20H2/21H1/21H2/22H2"),
-
     # Windows 11
     (22000, 22000, "Windows 11", "21H2"),
     (22621, 22621, "Windows 11", "22H2"),
@@ -101,6 +99,7 @@ MACOS_DARWIN_MAP = {
     22: ("macOS", "13", "Ventura"),
     23: ("macOS", "14", "Sonoma"),
     24: ("macOS", "15", "Sequoia"),
+    25: ("macOS", "26", "Tahoe"),
 }
 
 # Windows Server build map (build number range -> product name, marketing channel)
@@ -116,7 +115,6 @@ WINDOWS_SERVER_BUILD_MAP = [
     (7601, 7601, "Windows Server 2008 R2", "SP1"),
     (9200, 9200, "Windows Server 2012", "RTM"),
     (9600, 9600, "Windows Server 2012 R2", "RTM"),
-
     # NT 10.0 based server releases
     (14393, 14393, "Windows Server 2016", "1607"),
     (17763, 17763, "Windows Server 2019", "1809"),

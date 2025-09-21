@@ -66,6 +66,14 @@ def _apply_os_release(osrel: dict[str, Any], p: OSData) -> None:
 
     p.pretty_name = osrel.get("PRETTY_NAME") or osrel.get("NAME")
 
+    if not p.codename and p.pretty_name:
+        # Fallback: try to extract codename from parenthetical in pretty name (e.g. "Debian ... (buster)")
+        m = re.search(r"\(([^)]+)\)", str(p.pretty_name))
+        if m:
+            candidate = m.group(1).strip()
+            if candidate:
+                p.codename = candidate.title()
+
     _apply_version_id(osrel.get("VERSION_ID"), p)
 
     vcode = osrel.get("VERSION_CODENAME")
