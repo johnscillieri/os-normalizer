@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [0.3.3] - 2025-09-21
+
+- Added: `tests/case_utils.py` to share parametrization helpers across suites.
+- Added: Platform-specific suites for clearer test changes.
+- Removed: Legacy `tests/test_os_normalizer.py` harness now that coverage lives beside each platform.
+
 ## [0.3.2] - 2025-09-11
 
 - Added: More `pyproject.toml` metadata (description, keywords, classifiers, project URLs).
@@ -34,7 +40,8 @@ This file adheres to Keep a Changelog and Semantic Versioning.
 
 - Initial release.
 
-[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.1...HEAD
+[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.3...HEAD
+[0.3.3]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.2...v0.3.3
 [0.3.1]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.1.0...v0.2.0
