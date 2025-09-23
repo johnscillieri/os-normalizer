@@ -26,6 +26,7 @@ WIN_SP_RE = re.compile(r"\bSP\s?([0-9]+)\b", re.IGNORECASE)
 WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 WIN_FULL_NT_BUILD_RE = re.compile(r"\b(10)\.(0)\.(\d+)(?:\.(\d+))?\b")
+WIN_GENERIC_VERSION_RE = re.compile(r"\b(\d+)\.(\d+)\.(\d{3,6})(?:\.(\d+))?\b")
 WIN_CHANNEL_RE = re.compile(
     r"\b(24H2|23H2|22H2|21H2|21H1|20H2|2004|1909|1903|1809|1803|1709|1703|1607|1511|1507)\b",
     re.IGNORECASE,
@@ -63,6 +64,9 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
 
 
 def _detect_product_from_text(t: str) -> str:
+    # Normalize common typos before matching
+    t = t.replace("windws", "windows")
+
     if "windows 11" in t or "win11" in t:
         return "Windows 11"
     if "windows 10" in t or "win10" in t:
@@ -79,23 +83,23 @@ def _detect_product_from_text(t: str) -> str:
         return "Windows 98"
 
     # Server explicit names
-    if "windows server 2012 r2" in t:
+    if "windows server 2012 r2" in t or "windows 2012 r2" in t or "win2k12r2" in t or "win2012r2" in t:
         return "Windows Server 2012 R2"
-    if "windows server 2022" in t or "win2k22" in t or "win2022" in t:
+    if "windows server 2022" in t or "windows 2022" in t or "win2k22" in t or "win2022" in t:
         return "Windows Server 2022"
-    if "windows server 2019" in t or "win2k19" in t or "win2019" in t:
+    if "windows server 2019" in t or "windows 2019" in t or "win2k19" in t or "win2019" in t:
         return "Windows Server 2019"
-    if "windows server 2016" in t or "win2k16" in t or "win2016" in t:
+    if "windows server 2016" in t or "windows 2016" in t or "win2k16" in t or "win2016" in t:
         return "Windows Server 2016"
-    if "windows server 2012" in t or "win2k12" in t or "win2012" in t:
+    if "windows server 2012" in t or "windows 2012" in t or "win2k12" in t or "win2012" in t:
         return "Windows Server 2012"
-    if "windows server 2008 r2" in t:
+    if "windows server 2008 r2" in t or "windows 2008 r2" in t or "win2k8r2" in t or "win2008r2" in t:
         return "Windows Server 2008 R2"
-    if "windows server 2008" in t or "win2k8" in t or "win2008" in t:
+    if "windows server 2008" in t or "windows 2008" in t or "win2k8" in t or "win2008" in t:
         return "Windows Server 2008"
-    if "windows server 2003" in t or "win2k3" in t or "win2003" in t:
+    if "windows server 2003" in t or "windows 2003" in t or "win2k3" in t or "win2003" in t:
         return "Windows Server 2003"
-    if "windows server 2000" in t or "win2k" in t or "win2000" in t:
+    if "windows server 2000" in t or "windows 2000" in t or "win2k" in t or "win2000" in t:
         return "Windows Server 2000"
 
     if "windows" in t:
@@ -213,6 +217,14 @@ def _apply_full_kernel_and_channel(text: str, p: OSData) -> None:
     ch = WIN_CHANNEL_RE.search(text)
     if ch and not p.channel:
         p.channel = ch.group(1).upper()
+
+    if not p.kernel_version:
+        m2 = WIN_GENERIC_VERSION_RE.search(text)
+        if m2:
+            major, minor, build, suffix = m2.groups()
+            p.kernel_version = f"{major}.{minor}.{build}{('.' + suffix) if suffix else ''}"
+            p.version_build = p.version_build or build
+            p.evidence.setdefault("nt_version", f"{major}.{minor}")
 
 
 def _finalize_precision_and_version(p: OSData) -> None:
