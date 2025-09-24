@@ -27,8 +27,7 @@ WINDOWS_BUILD_MAP = [
     (1381, 1381, "Windows NT 4.0", "RTM"),
     (2195, 2195, "Windows 2000", "RTM"),
     (2600, 2600, "Windows XP", "RTM"),
-    # NT 5.2 builds are ambiguous (XP x64 vs Server 2003); keep consistent label
-    (3790, 3790, "Windows XP x64/Server 2003", "RTM"),
+    (3790, 3790, "Windows XP x64", "RTM"),
     # Vista/7/8/8.1
     (6000, 6000, "Windows Vista", "RTM"),
     (6001, 6001, "Windows Vista", "SP1"),
@@ -59,6 +58,27 @@ WINDOWS_BUILD_MAP = [
     (26100, 26199, "Windows 11", "24H2"),
 ]
 
+# Windows Server build map (build number range -> product name, marketing channel)
+# This is consulted only when the input looks server-like or when an explicit
+# Windows Server product is already detected. Client mapping will not override
+# explicit server detections.
+WINDOWS_SERVER_BUILD_MAP = [
+    # Legacy server releases aligned with Vista/7/8/8.1
+    (3790, 3790, "Windows Server 2003", "RTM"),
+    (6001, 6001, "Windows Server 2008", "RTM"),  # 6001 corresponds to 2008 RTM
+    (6002, 6002, "Windows Server 2008", "SP2"),
+    (7600, 7600, "Windows Server 2008 R2", "RTM"),
+    (7601, 7601, "Windows Server 2008 R2", "SP1"),
+    (9200, 9200, "Windows Server 2012", "RTM"),
+    (9600, 9600, "Windows Server 2012 R2", "RTM"),
+    # NT 10.0 based server releases
+    (14393, 14393, "Windows Server 2016", "1607"),
+    (17763, 17763, "Windows Server 2019", "1809"),
+    (20348, 20348, "Windows Server 2022", "21H2"),
+    # Windows Server 2025 (vNext) uses the 26100 train alongside client 24H2
+    (26100, 26199, "Windows Server 2025", "24H2"),
+]
+
 # Windows NT version tuple -> client product (ambiguous NT 6.x split out)
 WINDOWS_NT_CLIENT_MAP = {
     (4, 0): "Windows NT 4.0",
@@ -85,10 +105,32 @@ WINDOWS_NT_SERVER_MAP = {
     # NT 10.0: Server 2016/2019/2022 detected via explicit names, not NT mapping
 }
 
+
+WINDOWS_PRODUCT_PATTERNS: list[tuple[str, tuple[str, ...]]] = [
+    ("Windows 11", ("windows 11", "win11")),
+    ("Windows 10", ("windows 10", "win10")),
+    ("Windows 8.1", ("windows 8.1", "win81")),
+    ("Windows 8", ("windows 8", "win8")),
+    ("Windows 7", ("windows 7", "win7")),
+    ("Windows ME", ("windows me", "windows millenium")),
+    ("Windows 98", ("windows 98", "win98")),
+    ("Windows Server 2022", ("windows server 2022", "windows 2022", "win2k22", "win2022")),
+    ("Windows Server 2019", ("windows server 2019", "windows 2019", "win2k19", "win2019")),
+    ("Windows Server 2016", ("windows server 2016", "windows 2016", "win2k16", "win2016")),
+    ("Windows Server 2012 R2", ("windows server 2012 r2", "windows 2012 r2", "win2k12r2", "win2012r2")),
+    ("Windows Server 2012", ("windows server 2012", "windows 2012", "win2k12", "win2012")),
+    ("Windows Server 2008 R2", ("windows server 2008 r2", "windows 2008 r2", "win2k8r2", "win2008r2")),
+    ("Windows Server 2008", ("windows server 2008", "windows 2008", "win2k8", "win2008")),
+    ("Windows Server 2003", ("windows server 2003", "windows 2003", "win2k3", "win2003")),
+    ("Windows Server 2000", ("windows server 2000", "windows 2000", "win2k", "win2000")),
+]
+
+
 # Human readable aliases (macOS codenames)
 MACOS_ALIASES = {
-    "sonoma": "macOS 14",
+    "tahoe": "macOS 26",
     "sequoia": "macOS 15",
+    "sonoma": "macOS 14",
     "ventura": "macOS 13",
     "monterey": "macOS 12",
     "big sur": "macOS 11",
@@ -106,27 +148,6 @@ MACOS_DARWIN_MAP = {
     24: ("macOS", "15", "Sequoia"),
     25: ("macOS", "26", "Tahoe"),
 }
-
-# Windows Server build map (build number range -> product name, marketing channel)
-# This is consulted only when the input looks server-like or when an explicit
-# Windows Server product is already detected. Client mapping will not override
-# explicit server detections.
-WINDOWS_SERVER_BUILD_MAP = [
-    # Legacy server releases aligned with Vista/7/8/8.1
-    (3790, 3790, "Windows Server 2003", "RTM"),
-    (6001, 6001, "Windows Server 2008", "RTM"),  # 6001 corresponds to 2008 RTM
-    (6002, 6002, "Windows Server 2008", "SP2"),
-    (7600, 7600, "Windows Server 2008 R2", "RTM"),
-    (7601, 7601, "Windows Server 2008 R2", "SP1"),
-    (9200, 9200, "Windows Server 2012", "RTM"),
-    (9600, 9600, "Windows Server 2012 R2", "RTM"),
-    # NT 10.0 based server releases
-    (14393, 14393, "Windows Server 2016", "1607"),
-    (17763, 17763, "Windows Server 2019", "1809"),
-    (20348, 20348, "Windows Server 2022", "21H2"),
-    # Windows Server 2025 (vNext) uses the 26100 train alongside client 24H2
-    (26100, 26199, "Windows Server 2025", "24H2"),
-]
 
 # Cisco train names (used for codename detection)
 CISCO_TRAIN_NAMES = {"Everest", "Fuji", "Gibraltar", "Amsterdam", "Denali"}

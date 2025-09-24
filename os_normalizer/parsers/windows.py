@@ -12,6 +12,7 @@ from os_normalizer.constants import (
     WINDOWS_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
+    WINDOWS_PRODUCT_PATTERNS,
     WINDOWS_SERVER_BUILD_MAP,
 )
 from os_normalizer.helpers import update_confidence
@@ -42,24 +43,18 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     p.product = p.product or _detect_product_from_text(lower_text)
     p.edition = p.edition or _detect_edition(text)
 
-    # 2) Service Pack
-    _parse_service_pack(text, p)
-    _apply_service_pack_label(lower_text, p)
-
-    # 3) NT version mapping (client vs server)
+    # 2) NT version mapping (client vs server)
     server_like = _is_server_like(text.lower())
     _apply_nt_mapping(text, p, server_like)
 
-    # 4) Full kernel version (e.g., 10.0.22621.2715) + channel token if present
+    # 3) Full kernel version (e.g., 10.0.22621.2715) + channel token if present
     marketing = _apply_full_kernel_and_channel(text, p)
 
-    # 5) Build number + marketing channel (fallback when only 'build 22631' is present)
+    # 4) Build number + marketing channel (fallback when only 'build 22631' is present)
     marketing = marketing or _apply_build_mapping(text, p, server_like)
 
-    # 6) Precision and version_major if applicable
+    # 5) Precision and version_major if applicable
     _finalize_precision_and_version(p)
-
-    _finalize_service_pack_label(p)
 
     if not p.kernel_version:
         if p.version_major is not None and p.version_major >= 10:
@@ -70,6 +65,9 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
         elif p.version_major is not None and p.version_minor is not None:
             p.kernel_version = f"{p.version_major}.{p.version_minor}"
 
+    # 6) Service Pack
+    _apply_service_pack_label(lower_text, p)
+
     # 7) Vendor + confidence
     p.vendor = "Microsoft"
     update_confidence(p, p.precision)
@@ -77,47 +75,11 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
 
 
 def _detect_product_from_text(t: str) -> str:
-    # Normalize common typos before matching
-    t = t.replace("windws", "windows")
+    for product, patterns in WINDOWS_PRODUCT_PATTERNS:
+        if any(pat in t for pat in patterns):
+            return product
 
-    if "windows 11" in t or "win11" in t:
-        return "Windows 11"
-    if "windows 10" in t or "win10" in t:
-        return "Windows 10"
-    if "windows 8.1" in t or "win81" in t:
-        return "Windows 8.1"
-    if "windows 8" in t or "win8" in t:
-        return "Windows 8"
-    if "windows 7" in t or "win7" in t:
-        return "Windows 7"
-    if "windows me" in t or "windows millenium" in t:
-        return "Windows ME"
-    if "windows 98" in t or "win98" in t:
-        return "Windows 98"
-
-    # Server explicit names
-    if "windows server 2012 r2" in t or "windows 2012 r2" in t or "win2k12r2" in t or "win2012r2" in t:
-        return "Windows Server 2012 R2"
-    if "windows server 2022" in t or "windows 2022" in t or "win2k22" in t or "win2022" in t:
-        return "Windows Server 2022"
-    if "windows server 2019" in t or "windows 2019" in t or "win2k19" in t or "win2019" in t:
-        return "Windows Server 2019"
-    if "windows server 2016" in t or "windows 2016" in t or "win2k16" in t or "win2016" in t:
-        return "Windows Server 2016"
-    if "windows server 2012" in t or "windows 2012" in t or "win2k12" in t or "win2012" in t:
-        return "Windows Server 2012"
-    if "windows server 2008 r2" in t or "windows 2008 r2" in t or "win2k8r2" in t or "win2008r2" in t:
-        return "Windows Server 2008 R2"
-    if "windows server 2008" in t or "windows 2008" in t or "win2k8" in t or "win2008" in t:
-        return "Windows Server 2008"
-    if "windows server 2003" in t or "windows 2003" in t or "win2k3" in t or "win2003" in t:
-        return "Windows Server 2003"
-    if "windows server 2000" in t or "windows 2000" in t or "win2k" in t or "win2000" in t:
-        return "Windows Server 2000"
-
-    if "windows" in t:
-        return "Windows"
-    return "Unknown"
+    return "Windows" if "windows" in t else "Unknown"
 
 
 def _detect_edition(text: str) -> str | None:
@@ -138,18 +100,16 @@ def _detect_edition(text: str) -> str | None:
     return norm.get(token, token.title())
 
 
-def _parse_service_pack(text: str, p: OSData) -> None:
-    sp = WIN_SP_RE.search(text)
-    if sp:
-        p.version_patch = None
-        p.evidence["service_pack"] = sp.group(0)
-
-
 def _apply_service_pack_label(text_lower: str, p: OSData) -> None:
+    label = None
+
     if "sp1" in text_lower:
-        p.evidence["sp_label"] = "SP1"
+        label = "SP1"
     elif "sp2" in text_lower:
-        p.evidence["sp_label"] = "SP2"
+        label = "SP2"
+
+    if label and p.product and label.lower() not in p.product.lower():
+        p.product = f"{p.product} {label}"
 
 
 def _is_server_like(t: str) -> bool:
@@ -198,8 +158,7 @@ def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
 
     marketing: str | None = None
 
-    is_server_product = isinstance(p.product, str) and "server" in p.product.lower()
-    if is_server_product or server_like:
+    if server_like:
         for lo, hi, product_name, marketing_label in WINDOWS_SERVER_BUILD_MAP:
             if lo <= build_num <= hi:
                 if not p.product or p.product in ("Windows", "Windows 10/11"):
@@ -272,11 +231,3 @@ def _finalize_precision_and_version(p: OSData) -> None:
         p.precision = "product"
     else:
         p.precision = "family"
-
-
-def _finalize_service_pack_label(p: OSData) -> None:
-    label = None
-    if isinstance(p.evidence, dict):
-        label = p.evidence.pop("sp_label", None)
-    if label and p.product and label.lower() not in p.product.lower():
-        p.product = f"{p.product} {label}"
