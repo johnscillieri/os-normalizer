@@ -37,11 +37,12 @@ WIN_CHANNEL_RE = re.compile(
 def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     """Populate an OSData instance with Windows-specific details."""
     p.kernel_name = "nt"
+    p.vendor = "Microsoft"
 
     # 1) Product and edition from free text
     lower_text = text.lower()
-    p.product = p.product or _detect_product_from_text(lower_text)
-    p.edition = p.edition or _detect_edition(text)
+    p.product = _detect_product_from_text(lower_text)
+    p.edition = _detect_edition(text)
 
     # 2) NT version mapping (client vs server)
     server_like = _is_server_like(text.lower())
@@ -68,8 +69,7 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     # 6) Service Pack
     _apply_service_pack_label(lower_text, p)
 
-    # 7) Vendor + confidence
-    p.vendor = "Microsoft"
+    # 7) Update confidence
     update_confidence(p, p.precision)
     return p
 
@@ -98,18 +98,6 @@ def _detect_edition(text: str) -> str | None:
         "standard": "Standard",
     }
     return norm.get(token, token.title())
-
-
-def _apply_service_pack_label(text_lower: str, p: OSData) -> None:
-    label = None
-
-    if "sp1" in text_lower:
-        label = "SP1"
-    elif "sp2" in text_lower:
-        label = "SP2"
-
-    if label and p.product and label.lower() not in p.product.lower():
-        p.product = f"{p.product} {label}"
 
 
 def _is_server_like(t: str) -> bool:
@@ -141,39 +129,6 @@ def _apply_nt_mapping(text: str, p: OSData, server_like: bool) -> None:
     product = WINDOWS_NT_SERVER_MAP.get((major, minor)) if server_like else WINDOWS_NT_CLIENT_MAP.get((major, minor))
     if product:
         p.product = product
-
-
-def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
-    m = WIN_BUILD_RE.search(text)
-    if not m:
-        return None
-    build_num = int(m.group(1))
-    p.version_build = str(build_num)
-
-    if p.version_major is None or p.version_minor is None:
-        nt_mm = WIN_NT_RE.search(text)
-        if nt_mm:
-            p.version_major = p.version_major or int(nt_mm.group(1))
-            p.version_minor = p.version_minor or int(nt_mm.group(2))
-
-    marketing: str | None = None
-
-    if server_like:
-        for lo, hi, product_name, marketing_label in WINDOWS_SERVER_BUILD_MAP:
-            if lo <= build_num <= hi:
-                if not p.product or p.product in ("Windows", "Windows 10/11"):
-                    p.product = product_name
-                marketing = marketing_label
-                break
-    else:
-        for lo, hi, product_name, marketing_label in WINDOWS_BUILD_MAP:
-            if lo <= build_num <= hi:
-                if build_num >= 10240:
-                    p.product = product_name
-                marketing = marketing_label.split("/")[-1] if marketing_label else None
-                break
-
-    return marketing
 
 
 def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
@@ -212,6 +167,51 @@ def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
             p.build_id = f"{build}.{suffix}"
 
     return channel
+
+
+def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
+    m = WIN_BUILD_RE.search(text)
+    if not m:
+        return None
+    build_num = int(m.group(1))
+    p.version_build = str(build_num)
+
+    if p.version_major is None or p.version_minor is None:
+        nt_mm = WIN_NT_RE.search(text)
+        if nt_mm:
+            p.version_major = p.version_major or int(nt_mm.group(1))
+            p.version_minor = p.version_minor or int(nt_mm.group(2))
+
+    marketing: str | None = None
+
+    if server_like:
+        for lo, hi, product_name, marketing_label in WINDOWS_SERVER_BUILD_MAP:
+            if lo <= build_num <= hi:
+                if not p.product or p.product in ("Windows", "Windows 10/11"):
+                    p.product = product_name
+                marketing = marketing_label
+                break
+    else:
+        for lo, hi, product_name, marketing_label in WINDOWS_BUILD_MAP:
+            if lo <= build_num <= hi:
+                if build_num >= 10240:
+                    p.product = product_name
+                marketing = marketing_label.split("/")[-1] if marketing_label else None
+                break
+
+    return marketing
+
+
+def _apply_service_pack_label(text_lower: str, p: OSData) -> None:
+    label = None
+
+    if "sp1" in text_lower:
+        label = "SP1"
+    elif "sp2" in text_lower:
+        label = "SP2"
+
+    if label and p.product and label.lower() not in p.product.lower():
+        p.product = f"{p.product} {label}"
 
 
 def _finalize_precision_and_version(p: OSData) -> None:
