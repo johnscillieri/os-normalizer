@@ -4,7 +4,7 @@ A Python library for identifying and parsing operating system information from v
 
 ## Overview
 
-The OS Normalizer library parses raw operating system strings and JSON data to identify the OS family, version, architecture, and other details. It supports parsing of:
+The OS Normalizer library parses raw operating system strings and supplimental data to identify the OS family, version, architecture, and other details. It supports parsing of:
 
 - Windows (NT builds, versions)
 - macOS (Darwin versions, codenames)
@@ -35,17 +35,18 @@ print(result.product)  # Windows 11
 print(result.version_major)  # 11
 ```
 
-### Using Raw OS JSON Data
+### Using OS Release Data
 
 ```python
 from os_normalizer import normalize_os
 
-# Fingerprint with both raw string and JSON data
+# Fingerprint with both raw string and contents of os-release file
 raw_os_string="Linux host 5.15.0-122-generic x86_64"
-raw_os_json={
-    "os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy\nPRETTY_NAME="Ubuntu 22.04.4 LTS"'}
+os_release_data={
+    "os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy\nPRETTY_NAME="Ubuntu 22.04.4 LTS"'
+}
 
-result = normalize_os(raw_os_string, raw_os_json)
+result = normalize_os(raw_os_string, os_release_data)
 print(result.family)  # linux
 print(result.product)  # Ubuntu
 print(result.codename)  # Jammy
