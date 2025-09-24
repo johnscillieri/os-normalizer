@@ -9,6 +9,8 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
+from os_normalizer.constants import WINDOWS_BUILD_MAP
+
 if TYPE_CHECKING:
     from .models import OSData
 
@@ -59,9 +61,10 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
             "windows server 2022": "windows_server_2022",
         }
         base = prod_map.get(product, "windows")
-        # For Windows 10/11, append channel (e.g., _23h2) when available
-        if base in ("windows_10", "windows_11") and p.channel:
-            base = f"{base}_{p.channel.lower()}"
+        if base in ("windows_10", "windows_11"):
+            token = _windows_channel_token(p)
+            if token:
+                base = f"{base}_{token}"
         return vtok, base, "windows"
 
     # macOS
@@ -130,18 +133,23 @@ def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:
     """Return (version, update, edition) strings per strategy."""
     maj, minr, pat = p.version_major, p.version_minor, p.version_patch
     build = p.version_build
-    channel = (p.channel or "").lower() if p.channel else None
     edition = (p.edition or "").lower() if p.edition else None
 
     if strategy == "windows":
-        # Product may include channel; version should reflect NT kernel + build when known
-        if p.kernel_version:
-            ver = p.kernel_version
+        if p.version_major is not None and p.version_minor is not None:
+            base = f"{p.version_major}.{p.version_minor}"
+            if p.build_id and p.version_build and p.build_id.startswith(f"{p.version_build}."):
+                ver = f"{base}.{p.build_id}"
+            elif p.build_id and not p.version_build:
+                ver = f"{base}.{p.build_id}"
+            elif p.version_build:
+                ver = f"{base}.{p.version_build}"
+            else:
+                ver = base
         elif p.version_build:
-            nt = p.evidence.get("nt_version") if isinstance(p.evidence, dict) else None
-            ver = f"{nt}.{p.version_build}" if nt else p.version_build
+            ver = p.version_build
         else:
-            ver = "*"
+            ver = p.kernel_version or "*"
         return ver, "*", "*"
 
     if strategy == "ubuntu":
@@ -218,6 +226,42 @@ def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:
     else:
         ver = "*"
     return ver, "*", "*"
+
+
+def _windows_channel_token(p: OSData) -> str | None:
+    known_tokens = {
+        "24h2",
+        "23h2",
+        "22h2",
+        "21h2",
+        "21h1",
+        "20h2",
+        "2004",
+        "1909",
+        "1903",
+        "1809",
+        "1803",
+        "1709",
+        "1703",
+        "1607",
+        "1511",
+        "1507",
+    }
+
+    kv = (p.kernel_version or "").lower()
+    if kv in known_tokens:
+        return kv
+
+    vb = p.version_build
+    if vb and vb.isdigit():
+        build = int(vb)
+        for lo, hi, _product, marketing in WINDOWS_BUILD_MAP:
+            if lo <= build <= hi and marketing:
+                token = marketing.split('/')[-1].lower()
+                if token:
+                    return token
+
+    return None
 
 
 def _cpe_target_hw(arch: str | None) -> str:

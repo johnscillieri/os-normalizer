@@ -52,8 +52,8 @@ def test_merge_windows_build_then_title() -> None:
     p2 = normalize_os("Microsoft Windows 11 23h2 10.0.22631.2715 on x64")
     merged = merge_os(p1, p2)
     assert merged.product == "Windows 11"
-    assert merged.channel == "23H2"
-    assert merged.kernel_version == "10.0.22631.2715"
+    assert merged.channel is None
+    assert merged.kernel_version == "23H2"
     assert merged.os_key == "cpe:2.3:o:microsoft:windows_11_23h2:10.0.22631.2715:*:*:*:*:*:x64:*"
 
 

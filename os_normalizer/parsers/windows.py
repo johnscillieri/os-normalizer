@@ -38,24 +38,37 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     p.kernel_name = "nt"
 
     # 1) Product and edition from free text
-    p.product = p.product or _detect_product_from_text(text.lower())
+    lower_text = text.lower()
+    p.product = p.product or _detect_product_from_text(lower_text)
     p.edition = p.edition or _detect_edition(text)
 
     # 2) Service Pack
     _parse_service_pack(text, p)
+    _apply_service_pack_label(lower_text, p)
 
     # 3) NT version mapping (client vs server)
     server_like = _is_server_like(text.lower())
     _apply_nt_mapping(text, p, server_like)
 
     # 4) Full kernel version (e.g., 10.0.22621.2715) + channel token if present
-    _apply_full_kernel_and_channel(text, p)
+    marketing = _apply_full_kernel_and_channel(text, p)
 
     # 5) Build number + marketing channel (fallback when only 'build 22631' is present)
-    _apply_build_mapping(text, p, server_like)
+    marketing = marketing or _apply_build_mapping(text, p, server_like)
 
     # 6) Precision and version_major if applicable
     _finalize_precision_and_version(p)
+
+    _finalize_service_pack_label(p)
+
+    if not p.kernel_version:
+        if p.version_major is not None and p.version_major >= 10:
+            if marketing:
+                p.kernel_version = marketing
+            elif p.version_build:
+                p.kernel_version = p.version_build
+        elif p.version_major is not None and p.version_minor is not None:
+            p.kernel_version = f"{p.version_major}.{p.version_minor}"
 
     # 7) Vendor + confidence
     p.vendor = "Microsoft"
@@ -128,8 +141,15 @@ def _detect_edition(text: str) -> str | None:
 def _parse_service_pack(text: str, p: OSData) -> None:
     sp = WIN_SP_RE.search(text)
     if sp:
-        p.version_patch = int(sp.group(1))
+        p.version_patch = None
         p.evidence["service_pack"] = sp.group(0)
+
+
+def _apply_service_pack_label(text_lower: str, p: OSData) -> None:
+    if "sp1" in text_lower:
+        p.evidence["sp_label"] = "SP1"
+    elif "sp2" in text_lower:
+        p.evidence["sp_label"] = "SP2"
 
 
 def _is_server_like(t: str) -> bool:
@@ -163,68 +183,76 @@ def _apply_nt_mapping(text: str, p: OSData, server_like: bool) -> None:
         p.product = product
 
 
-def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> None:
+def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
     m = WIN_BUILD_RE.search(text)
     if not m:
-        return
+        return None
     build_num = int(m.group(1))
     p.version_build = str(build_num)
 
-    # Kernel version string
-    if not p.kernel_version:
-        if (p.product == "Windows 10/11") or ("10.0" in text):
-            p.kernel_version = f"10.0.{build_num}"
-        else:
-            nt_mm = WIN_NT_RE.search(text)
-            if nt_mm:
-                maj, minr = int(nt_mm.group(1)), int(nt_mm.group(2))
-                p.kernel_version = f"{maj}.{minr}.{build_num}"
+    if p.version_major is None or p.version_minor is None:
+        nt_mm = WIN_NT_RE.search(text)
+        if nt_mm:
+            p.version_major = p.version_major or int(nt_mm.group(1))
+            p.version_minor = p.version_minor or int(nt_mm.group(2))
+
+    marketing: str | None = None
 
     is_server_product = isinstance(p.product, str) and "server" in p.product.lower()
     if is_server_product or server_like:
-        # Apply server build mapping; do not override explicit server product names
-        for lo, hi, product_name, marketing in WINDOWS_SERVER_BUILD_MAP:
+        for lo, hi, product_name, marketing_label in WINDOWS_SERVER_BUILD_MAP:
             if lo <= build_num <= hi:
                 if not p.product or p.product in ("Windows", "Windows 10/11"):
                     p.product = product_name
-                # Only set channel for modern Server (2016+)
-                if build_num >= 14393:
-                    p.channel = p.channel or marketing
+                marketing = marketing_label
                 break
     else:
-        # Apply client build mapping
-        for lo, hi, product_name, marketing in WINDOWS_BUILD_MAP:
+        for lo, hi, product_name, marketing_label in WINDOWS_BUILD_MAP:
             if lo <= build_num <= hi:
-                # Only use build map to set product for Windows 10/11 trains
                 if build_num >= 10240:
                     p.product = product_name
-                    p.channel = p.channel or marketing
+                marketing = marketing_label.split("/")[-1] if marketing_label else None
                 break
 
+    return marketing
 
-def _apply_full_kernel_and_channel(text: str, p: OSData) -> None:
+
+def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
     # Full NT kernel version, e.g., 10.0.22621.2715
     m = WIN_FULL_NT_BUILD_RE.search(text)
     if m:
         build = m.group(3)
         suffix = m.group(4)
         p.version_build = p.version_build or build
-        p.kernel_version = f"10.0.{build}{('.' + suffix) if suffix else ''}"
         # Record evidence for NT 10.0 if not set via NT mapping
-        p.evidence.setdefault("nt_version", "10.0")
+        if "nt_version" not in p.evidence:
+            p.evidence["nt_version"] = "10.0"
+        if p.version_major is None:
+            p.version_major = 10
+        if p.version_minor is None:
+            p.version_minor = 0
+        if suffix and not p.build_id:
+            p.build_id = f"{build}.{suffix}"
 
     # Marketing channel token in free text, e.g., 22H2 (case-insensitive)
+    channel = None
     ch = WIN_CHANNEL_RE.search(text)
-    if ch and not p.channel:
-        p.channel = ch.group(1).upper()
+    if ch:
+        channel = ch.group(1).upper()
 
-    if not p.kernel_version:
-        m2 = WIN_GENERIC_VERSION_RE.search(text)
-        if m2:
-            major, minor, build, suffix = m2.groups()
-            p.kernel_version = f"{major}.{minor}.{build}{('.' + suffix) if suffix else ''}"
-            p.version_build = p.version_build or build
-            p.evidence.setdefault("nt_version", f"{major}.{minor}")
+    m2 = WIN_GENERIC_VERSION_RE.search(text)
+    if m2:
+        major, minor, build, suffix = m2.groups()
+        p.version_build = p.version_build or build
+        p.evidence.setdefault("nt_version", f"{major}.{minor}")
+        if p.version_major is None:
+            p.version_major = int(major)
+        if p.version_minor is None:
+            p.version_minor = int(minor)
+        if suffix and not p.build_id:
+            p.build_id = f"{build}.{suffix}"
+
+    return channel
 
 
 def _finalize_precision_and_version(p: OSData) -> None:
@@ -244,3 +272,11 @@ def _finalize_precision_and_version(p: OSData) -> None:
         p.precision = "product"
     else:
         p.precision = "family"
+
+
+def _finalize_service_pack_label(p: OSData) -> None:
+    label = None
+    if isinstance(p.evidence, dict):
+        label = p.evidence.pop("sp_label", None)
+    if label and p.product and label.lower() not in p.product.lower():
+        p.product = f"{p.product} {label}"
