@@ -39,7 +39,7 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
     """
     fam = (p.family or "").lower()
     vendor = (p.vendor or "").lower() if p.vendor else None
-    product = (p.product or "").lower() if p.product else None
+    product = (p.product or "").lower() if p.product else ""
 
     # Windows
     if fam == "windows":

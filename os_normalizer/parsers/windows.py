@@ -6,13 +6,13 @@ avoiding ambiguous NT mappings when server signals are present.
 """
 
 import re
-from typing import Any, Optional
+from typing import Any
 
 from os_normalizer.constants import (
     WINDOWS_BUILD_MAP,
-    WINDOWS_SERVER_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
+    WINDOWS_SERVER_BUILD_MAP,
 )
 from os_normalizer.helpers import update_confidence
 from os_normalizer.models import OSData

@@ -3,6 +3,18 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [0.4.0] - 2025-09-22
+
+- Changed: Windows parser now normalizes typoed `windws` tokens, infers server editions from `Windows 2008/2012/2003` strings, and derives build numbers from generic `6.x.yyyy` patterns.
+- Fixed: Windows Server 2012 R2 and older NT-based servers are correctly identified when only kernel/build identifiers are present.
+- Fixed: OSData now always captures `kernel_version`/`version_build` for telemetry-only inputs.
+
+## [0.3.4] - 2025-09-21
+
+- Added: Extensive Windows kernel/build fixtures (e.g., `Windows 7601 6.1.7601 ...`) to lock in parsing of raw telemetry strings.
+- Added: Coverage for Windows Server kernel identifiers to ensure server products are emitted with matching CPE metadata.
+- Added: Regression tests for Redstone/Windows 10 marketing channels and mixed-case architecture tokens.
+
 ## [0.3.3] - 2025-09-21
 
 - Added: `tests/case_utils.py` to share parametrization helpers across suites.
@@ -40,8 +52,11 @@ This file adheres to Keep a Changelog and Semantic Versioning.
 
 - Initial release.
 
-[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.3...HEAD
+[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.4.0...HEAD
+[0.4.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.4...v0.4.0
+[0.3.4]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.2...v0.3.3
+[0.3.2]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.1...v0.3.2
 [0.3.1]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.0...v0.3.1
 [0.3.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.2.0...v0.3.0
 [0.2.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.1.0...v0.2.0

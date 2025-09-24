@@ -2,7 +2,12 @@
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
+
 import pytest
+
+if TYPE_CHECKING:
+    from collections.abc import Sequence
 
 
 def safe_id(text: str) -> str:
@@ -10,7 +15,7 @@ def safe_id(text: str) -> str:
     return text.replace(" ", "_").replace("/", "_").replace(".", "_")[:30]
 
 
-def build_params(group: str, cases: list[tuple[str, dict | None, object]]) -> list:
+def build_params(group: str, cases: Sequence[tuple[str, dict | None, object]]) -> list:
     """Create pytest parameters with stable IDs for a set of cases."""
     params: list = []
     for idx, (raw, data, expected) in enumerate(cases):
