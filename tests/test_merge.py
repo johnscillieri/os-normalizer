@@ -81,7 +81,8 @@ def test_merge_cisco_show_then_image() -> None:
     merged = merge_os(p1, p2)
     assert merged.vendor == "Cisco"
     assert merged.product == "IOS XE"
-    assert merged.version_major == 17 and merged.version_minor == 9
+    assert merged.version_major == 17
+    assert merged.version_minor == 9
     assert merged.version_build == "17.9.1a"
     assert merged.edition == "universalk9"
     assert merged.codename == "Amsterdam"

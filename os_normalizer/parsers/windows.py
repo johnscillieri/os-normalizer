@@ -28,10 +28,40 @@ WIN_BUILD_RE = re.compile(r"\bbuild\s?(\d{4,6})\b", re.IGNORECASE)
 WIN_NT_RE = re.compile(r"\bnt\s?(\d+)\.(\d+)\b", re.IGNORECASE)
 WIN_FULL_NT_BUILD_RE = re.compile(r"\b(10)\.(0)\.(\d+)(?:\.(\d+))?\b")
 WIN_GENERIC_VERSION_RE = re.compile(r"\b(\d+)\.(\d+)\.(\d{3,6})(?:\.(\d+))?\b")
-WIN_CHANNEL_RE = re.compile(
+WIN_10_11_KERNEL_VERSION_RE = re.compile(
     r"\b(24H2|23H2|22H2|21H2|21H1|20H2|2004|1909|1903|1809|1803|1709|1703|1607|1511|1507)\b",
     re.IGNORECASE,
 )
+
+'''
+class OSData:
+    """Structured representation of a parsed operating system."""
+
+    # Core identity
+    family: str | None = None  # windows, linux, macos, ios, android, bsd, network-os
+    vendor: str | None = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
+    product: str | None = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
+    edition: str | None = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
+    codename: str | None = None  # Sequoia; Ubuntu codename; Cisco train
+
+    # Versions
+    version_major: int | None = None
+    version_minor: int | None = None
+    version_build: str | None = None  # Windows build; network image tag
+    version_patch: int | None = None
+
+    # Kernel / image details
+    kernel_name: str | None = None
+    kernel_version: str | None = None
+
+    # Meta information
+    precision: str = "unknown"  # family|product|major|minor|patch|build
+    confidence: float = 0.0
+    evidence: dict[str, Any] = field(default_factory=dict)
+
+    # Canonical key for deduplication / indexing
+    os_key: str | None = field(default=None, compare=False)
+'''
 
 
 def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
@@ -48,19 +78,19 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     server_like = _is_server_like(text.lower())
     _apply_nt_mapping(text, p, server_like)
 
-    # 3) Full kernel version (e.g., 10.0.22621.2715) + channel token if present
-    marketing = _apply_full_kernel_and_channel(text, p)
+    # 3) Full product version (e.g., 10.0.22621.2715) + kernel_version if present
+    kernel_version = _apply_product_version_and_kernel_version(text, p)
 
-    # 4) Build number + marketing channel (fallback when only 'build 22631' is present)
-    marketing = marketing or _apply_build_mapping(text, p, server_like)
+    # 4) Build number (fallback when only 'build 22631' is present)
+    kernel_version = kernel_version or _apply_build_mapping(text, p, server_like)
 
     # 5) Precision and version_major if applicable
     _finalize_precision_and_version(p)
 
     if not p.kernel_version:
         if p.version_major is not None and p.version_major >= 10:
-            if marketing:
-                p.kernel_version = marketing
+            if kernel_version:
+                p.kernel_version = kernel_version
             elif p.version_build:
                 p.kernel_version = p.version_build
         elif p.version_major is not None and p.version_minor is not None:
@@ -131,8 +161,8 @@ def _apply_nt_mapping(text: str, p: OSData, server_like: bool) -> None:
         p.product = product
 
 
-def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
-    # Full NT kernel version, e.g., 10.0.22621.2715
+def _apply_product_version_and_kernel_version(text: str, p: OSData) -> str | None:
+    # Full product version, e.g., 10.0.22621.2715
     m = WIN_FULL_NT_BUILD_RE.search(text)
     if m:
         build = m.group(3)
@@ -148,11 +178,11 @@ def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
         if suffix and not p.build_id:
             p.build_id = f"{build}.{suffix}"
 
-    # Marketing channel token in free text, e.g., 22H2 (case-insensitive)
-    channel = None
-    ch = WIN_CHANNEL_RE.search(text)
-    if ch:
-        channel = ch.group(1).upper()
+    # kernel_version token in free text, e.g., 22H2 (case-insensitive)
+    kernel_version = None
+    kv_match = WIN_10_11_KERNEL_VERSION_RE.search(text)
+    if kv_match:
+        kernel_version = kv_match.group(1).upper()
 
     m2 = WIN_GENERIC_VERSION_RE.search(text)
     if m2:
@@ -166,7 +196,7 @@ def _apply_full_kernel_and_channel(text: str, p: OSData) -> str | None:
         if suffix and not p.build_id:
             p.build_id = f"{build}.{suffix}"
 
-    return channel
+    return kernel_version
 
 
 def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
@@ -182,24 +212,24 @@ def _apply_build_mapping(text: str, p: OSData, server_like: bool) -> str | None:
             p.version_major = p.version_major or int(nt_mm.group(1))
             p.version_minor = p.version_minor or int(nt_mm.group(2))
 
-    marketing: str | None = None
+    kernel_version: str | None = None
 
     if server_like:
-        for lo, hi, product_name, marketing_label in WINDOWS_SERVER_BUILD_MAP:
+        for lo, hi, product_name, kv_label in WINDOWS_SERVER_BUILD_MAP:
             if lo <= build_num <= hi:
                 if not p.product or p.product in ("Windows", "Windows 10/11"):
                     p.product = product_name
-                marketing = marketing_label
+                kernel_version = kv_label
                 break
     else:
-        for lo, hi, product_name, marketing_label in WINDOWS_BUILD_MAP:
+        for lo, hi, product_name, kv_label in WINDOWS_BUILD_MAP:
             if lo <= build_num <= hi:
                 if build_num >= 10240:
                     p.product = product_name
-                marketing = marketing_label.split("/")[-1] if marketing_label else None
+                kernel_version = kv_label.split("/")[-1] if kv_label else None
                 break
 
-    return marketing
+    return kernel_version
 
 
 def _apply_service_pack_label(text_lower: str, p: OSData) -> None:
