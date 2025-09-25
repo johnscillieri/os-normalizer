@@ -136,18 +136,21 @@ def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:
     edition = (p.edition or "").lower() if p.edition else None
 
     if strategy == "windows":
+        patch = p.version_patch
         if p.version_major is not None and p.version_minor is not None:
             base = f"{p.version_major}.{p.version_minor}"
-            if p.build_id and p.version_build and p.build_id.startswith(f"{p.version_build}."):
-                ver = f"{base}.{p.build_id}"
-            elif p.build_id and not p.version_build:
-                ver = f"{base}.{p.build_id}"
-            elif p.version_build:
+            if p.version_build:
                 ver = f"{base}.{p.version_build}"
+                if patch not in (None, 0):
+                    ver = f"{ver}.{patch}"
             else:
                 ver = base
+                if patch not in (None, 0):
+                    ver = f"{ver}.{patch}"
         elif p.version_build:
             ver = p.version_build
+            if patch not in (None, 0):
+                ver = f"{ver}.{patch}"
         else:
             ver = p.kernel_version or "*"
         return ver, "*", "*"
