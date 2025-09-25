@@ -25,8 +25,10 @@ ARCH_SYNONYMS = {
 WINDOWS_BUILD_MAP = [
     # NT era (pre-Windows 10)
     (1381, 1381, "Windows NT 4.0", "RTM"),
+    (1998, 1998, "Windows 98", "RTM"),
     (2195, 2195, "Windows 2000", "RTM"),
     (2600, 2600, "Windows XP", "RTM"),
+    (3000, 3000, "Windows Me", "RTM"),
     (3790, 3790, "Windows XP x64", "RTM"),
     # Vista/7/8/8.1
     (6000, 6000, "Windows Vista", "RTM"),
@@ -82,6 +84,8 @@ WINDOWS_SERVER_BUILD_MAP = [
 # Windows NT version tuple -> client product (ambiguous NT 6.x split out)
 WINDOWS_NT_CLIENT_MAP = {
     (4, 0): "Windows NT 4.0",
+    (4, 10): "Windows 98",
+    (4, 90): "Windows Me",
     (5, 0): "Windows 2000",
     (5, 1): "Windows XP",
     (5, 2): "Windows XP x64/Server 2003",  # NT 5.2 often maps to XP x64 on client
