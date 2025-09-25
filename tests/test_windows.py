@@ -299,6 +299,26 @@ WINDOWS_OSDATA_CASES = [
         ),
     ),
     (
+        "Microsoft Windows 7 Professional 6.1.7601 x86",
+        None,
+        OSData(
+            family="windows",
+            vendor="Microsoft",
+            product="Windows 7",
+            edition="Professional",
+            version_major=6,
+            version_minor=1,
+            version_build="7601",
+            kernel_name="nt",
+            kernel_version="6.1",
+            arch="x86",
+            precision="build",
+            confidence=0.85,
+            evidence={"hit": "windows", "nt_version": "6.1"},
+            os_key="cpe:2.3:o:microsoft:windows_7:*:*:*:*:*:*:x86:*",
+        ),
+    ),
+    (
         "Windows NT 10.0 build 22631 Pro ARM64",
         None,
         OSData(
