@@ -51,15 +51,15 @@ PRODUCT_DEFAULTS: dict[str, ProductDefaults] = {
     "Windows 7 SP1": ProductDefaults(6, 1, None, "7601", "6.1", "build", 0.7),
     "Windows 8": ProductDefaults(6, 2, None, "9200", "6.2", "build", 0.7),
     "Windows 8.1": ProductDefaults(6, 3, None, "9600", "6.3", "build", 0.7),
-    "Windows 10": ProductDefaults(10, None, None, None, None, "major", 0.7),
-    "Windows 11": ProductDefaults(11, None, None, None, None, "major", 0.7),
+    "Windows 10": ProductDefaults(10, 0, None, None, None, "major", 0.7),
+    "Windows 11": ProductDefaults(11, 0, None, None, None, "major", 0.7),
     "Windows 98": ProductDefaults(4, 10, None, "1998", "4.10", "build", 0.85),
     "Windows ME": ProductDefaults(4, 90, None, "3000", "4.9", "build", 0.85),
     "Windows Server 2012": ProductDefaults(6, 2, None, "9200", "6.2", "product", 0.6),
     "Windows Server 2012 R2": ProductDefaults(6, 3, None, "9600", "6.3", "product", 0.6),
     "Windows Server 2016": ProductDefaults(10, 0, None, None, None, "product", 0.6),
-    "Windows Server 2019": ProductDefaults(None, None, None, None, None, "product", 0.6),
-    "Windows Server 2022": ProductDefaults(None, None, None, None, None, "product", 0.6),
+    "Windows Server 2019": ProductDefaults(10, 0, None, None, None, "product", 0.6),
+    "Windows Server 2022": ProductDefaults(10, 0, None, None, None, "product", 0.6),
 }
 
 
@@ -163,9 +163,6 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
         kernel_version = defaults.kernel_version
     if kernel_version:
         p.kernel_version = kernel_version
-
-    if p.product in ("Windows 10", "Windows 11") and p.version_minor is None:
-        p.version_minor = 0
 
     precision = _derive_precision(p.version_major, p.version_minor, p.version_patch, p.version_build)
     if defaults and not explicit_version and defaults.precision:
