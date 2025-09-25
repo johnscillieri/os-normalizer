@@ -42,157 +42,174 @@ class ProductDefaults:
     version_patch: int | None = None
     version_build: str | None = None
     kernel_version: str | None = None
-    precision: str | None = None
-    confidence: float | None = None
 
 
 PRODUCT_DEFAULTS: dict[str, ProductDefaults] = {
-    "Windows 7": ProductDefaults(6, 1, None, "7601", "6.1", "build", 0.85),
-    "Windows 7 SP1": ProductDefaults(6, 1, None, "7601", "6.1", "build", 0.7),
-    "Windows 8": ProductDefaults(6, 2, None, "9200", "6.2", "build", 0.7),
-    "Windows 8.1": ProductDefaults(6, 3, None, "9600", "6.3", "build", 0.7),
-    "Windows 10": ProductDefaults(10, 0, None, None, None, "major", 0.7),
-    "Windows 11": ProductDefaults(11, 0, None, None, None, "major", 0.7),
-    "Windows 98": ProductDefaults(4, 10, None, "1998", "4.10", "build", 0.85),
-    "Windows ME": ProductDefaults(4, 90, None, "3000", "4.9", "build", 0.85),
-    "Windows Server 2012": ProductDefaults(6, 2, None, "9200", "6.2", "product", 0.6),
-    "Windows Server 2012 R2": ProductDefaults(6, 3, None, "9600", "6.3", "product", 0.6),
-    "Windows Server 2016": ProductDefaults(10, 0, None, None, None, "product", 0.6),
-    "Windows Server 2019": ProductDefaults(10, 0, None, None, None, "product", 0.6),
-    "Windows Server 2022": ProductDefaults(10, 0, None, None, None, "product", 0.6),
+    "Windows NT 4.0": ProductDefaults(4, 0, None, "1381", "4.0"),
+    "Windows 98": ProductDefaults(4, 10, None, "1998", "4.10"),
+    "Windows ME": ProductDefaults(4, 90, None, "3000", "4.9"),
+    "Windows 2000": ProductDefaults(5, 0, None, "2195", "5.0"),
+    "Windows XP": ProductDefaults(5, 1, None, "2600", "5.1"),
+    "Windows Vista": ProductDefaults(6, 0, None, "6000", "6.0"),
+    "Windows Vista SP1": ProductDefaults(6, 0, None, "6001", "6.0"),
+    "Windows Vista SP2": ProductDefaults(6, 0, None, "6002", "6.0"),
+    "Windows 7": ProductDefaults(6, 1, None, "7601", "6.1"),
+    "Windows 7 SP1": ProductDefaults(6, 1, None, "7601", "6.1"),
+    "Windows 7 SP2": ProductDefaults(6, 1, None, "7601", "6.1"),
+    "Windows 8": ProductDefaults(6, 2, None, "9200", "6.2"),
+    "Windows 8.1": ProductDefaults(6, 3, None, "9600", "6.3"),
+    "Windows 10": ProductDefaults(10, 0, None, None, None),
+    "Windows 11": ProductDefaults(11, 0, None, None, None),
+    "Windows Server 2003": ProductDefaults(5, 2, None, "3790", "5.2"),
+    "Windows Server 2008": ProductDefaults(6, 0, None, "6002", "6.0"),
+    "Windows Server 2008 R2": ProductDefaults(6, 1, None, "7600", "6.1"),
+    "Windows Server 2008 R2 SP1": ProductDefaults(6, 1, None, "7601", "6.1"),
+    "Windows Server 2012": ProductDefaults(6, 2, None, "9200", "6.2"),
+    "Windows Server 2012 R2": ProductDefaults(6, 3, None, "9600", "6.3"),
+    "Windows Server 2016": ProductDefaults(10, 0, None, None, None),
+    "Windows Server 2019": ProductDefaults(10, 0, None, None, None),
+    "Windows Server 2022": ProductDefaults(10, 0, None, None, None),
+    "Windows Server 2025": ProductDefaults(11, 0, None, None, None),
 }
+
+
+@dataclass
+class VersionState:
+    """Intermediate container for NT/build details discovered in the banner."""
+
+    nt_major: int | None = None
+    nt_minor: int | None = None
+    build: str | None = None
+    patch: int | None = None
+    channel: str | None = None
+    explicit: bool = False
 
 
 def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     """Populate an OSData instance with Windows-specific details."""
     tl = text.lower()
 
-    p.vendor = p.vendor or "Microsoft"
+    p.vendor = "Microsoft"
     p.kernel_name = "nt"
+    p.arch = extract_arch_from_text(tl)
+    p.edition = _detect_edition(tl)
 
-    arch = extract_arch_from_text(text)
-    if arch:
-        p.arch = arch
+    product = _detect_product(tl)
+    server_hint = _initial_server_hint(tl, product)
+    state = _extract_version_state(tl)
+    product, server_hint = _apply_build_context(state, product, server_hint)
+    p.product = _finalize_product_label(tl, product, state, server_hint)
 
-    product, alias = _detect_product(tl)
-    server_hint = "server" in tl or (product and "server" in product.lower())
+    defaults = PRODUCT_DEFAULTS.get(p.product or "")
+    _apply_version_numbers(p, defaults, state)
+    _set_kernel_version(p, defaults, state)
+    _finalize_precision_and_confidence(p, state)
 
-    edition = _detect_edition(tl)
-    if edition:
-        p.edition = edition
+    return p
 
-    nt_major: int | None = None
-    nt_minor: int | None = None
-    version_build: str | None = None
-    version_patch: int | None = None
-    channel: str | None = None
-    explicit_version = False
+
+def _detect_product(text: str) -> str | None:
+    for product, patterns in WINDOWS_PRODUCT_PATTERNS:
+        for token in patterns:
+            if token in text:
+                return product
+    return None
+
+
+def _initial_server_hint(tl: str, product: str | None) -> bool:
+    """Return True when the banner or product implies a Windows Server build."""
+    return "server" in tl or (product is not None and "server" in product.lower())
+
+
+def _extract_version_state(text: str) -> VersionState:
+    """Collect NT version, build, and patch information from the banner."""
+    state = VersionState()
 
     best = _select_best_version(text)
     if best:
-        nt_major, nt_minor, version_build, version_patch = best
-        explicit_version = True
+        state.nt_major, state.nt_minor, state.build, state.patch = best
+        state.explicit = True
 
     nt_match = NT_PATTERN.search(text)
     if nt_match:
         maj = int(nt_match.group(1))
         minr = int(nt_match.group(2)) if nt_match.group(2) else 0
-        if nt_major is None:
-            nt_major = maj
-            nt_minor = minr
+        if state.nt_major is None:
+            state.nt_major = maj
+            state.nt_minor = minr
         else:
-            nt_minor = nt_minor if nt_minor is not None else minr
-        explicit_version = True
+            state.nt_minor = state.nt_minor if state.nt_minor is not None else minr
+        state.explicit = True
 
-    if version_build is None:
+    if state.build is None:
         build_match = BUILD_PATTERN.search(text)
         if build_match:
-            version_build = str(int(build_match.group(1)))
-            explicit_version = True
+            state.build = str(int(build_match.group(1)))
+            state.explicit = True
 
-    build_num = int(version_build) if version_build and version_build.isdigit() else None
-    if build_num is not None:
-        product_from_build, channel, is_server_build = _lookup_build(build_num, server_hint)
-        if product_from_build and not product:
-            product = product_from_build
-        if is_server_build:
-            server_hint = True
+    return state
 
-    if product is None and nt_major is not None and nt_minor is not None:
-        product = _product_from_nt(nt_major, nt_minor, server_hint)
+
+def _apply_build_context(state: VersionState, product: str | None, server_hint: bool) -> tuple[str | None, bool]:
+    """Use build numbers to infer product/channel metadata and refine server hint."""
+    build_num = int(state.build) if state.build and state.build.isdigit() else None
+    if build_num is None:
+        return product, server_hint
+
+    product_from_build, channel, is_server_build = _lookup_build(build_num, server_hint)
+    if product_from_build and not product:
+        product = product_from_build
+    if is_server_build:
+        server_hint = True
+    state.channel = channel
+    return product, server_hint
+
+
+def _finalize_product_label(tl: str, product: str | None, state: VersionState, server_hint: bool) -> str | None:
+    """Resolve the most precise product name available for the banner."""
+    if product is None and state.nt_major is not None and state.nt_minor is not None:
+        product = _product_from_nt(state.nt_major, state.nt_minor, server_hint)
 
     if product:
         sp_match = SP_PATTERN.search(tl)
         if sp_match and "windows 7" in product.lower():
             product = f"Windows 7 SP{sp_match.group(1)}"
 
-    if product:
-        p.product = product
+    return product
 
-    if p.edition is None and edition:
-        p.edition = edition
 
-    defaults = PRODUCT_DEFAULTS.get(p.product or "")
+def _apply_version_numbers(p: OSData, defaults: ProductDefaults, state: VersionState) -> None:
+    """Move version components from the parse state into the OSData payload."""
+    p.version_major = state.nt_major if state.nt_major is not None else defaults.version_major
+    p.version_minor = state.nt_minor if state.nt_minor is not None else defaults.version_minor
+    p.version_patch = state.patch if state.patch is not None else defaults.version_patch
+    p.version_build = state.build if state.build is not None else defaults.version_build
 
-    if nt_major is not None:
-        p.version_major = nt_major
-    if nt_minor is not None:
-        p.version_minor = nt_minor
-    if version_patch is not None:
-        p.version_patch = version_patch
-    if version_build is not None:
-        p.version_build = version_build
 
-    if defaults:
-        if p.version_major is None and defaults.version_major is not None:
-            p.version_major = defaults.version_major
-        if p.version_minor is None and defaults.version_minor is not None:
-            p.version_minor = defaults.version_minor
-        if p.version_patch is None and defaults.version_patch is not None:
-            p.version_patch = defaults.version_patch
-        if p.version_build is None and defaults.version_build is not None:
-            p.version_build = defaults.version_build
-
+def _set_kernel_version(p: OSData, defaults: ProductDefaults | None, state: VersionState) -> None:
+    """Populate kernel_version using explicit tokens, build channel, or defaults."""
     kernel_version: str | None = None
-    if explicit_version and nt_major is not None:
-        if nt_major >= 10 and channel:
-            kernel_version = channel
-        elif nt_minor is not None:
-            kernel_version = f"{nt_major}.{nt_minor}"
-    if not kernel_version and defaults and defaults.kernel_version:
+    if state.explicit and state.nt_major is not None:
+        if state.nt_major >= 10 and state.channel:
+            kernel_version = state.channel
+        elif state.nt_minor is not None:
+            kernel_version = f"{state.nt_major}.{state.nt_minor}"
+    if kernel_version is None and defaults and defaults.kernel_version:
         kernel_version = defaults.kernel_version
     if kernel_version:
         p.kernel_version = kernel_version
 
-    precision = _derive_precision(p.version_major, p.version_minor, p.version_patch, p.version_build)
-    if defaults and not explicit_version and defaults.precision:
-        precision = defaults.precision
-    p.precision = precision
 
-    explicit_confidence = explicit_version and (nt_major is not None or version_build is not None)
-    if explicit_version and nt_major is not None:
-        norm_major = min(10, nt_major)
-        norm_minor = nt_minor if nt_minor is not None else 0
+def _finalize_precision_and_confidence(p: OSData, state: VersionState) -> None:
+    """Derive precision/confidence and record evidence for explicit NT versions."""
+    p.precision = _derive_precision(p.version_major, p.version_minor, p.version_patch, p.version_build)
+
+    if state.explicit and state.nt_major is not None:
+        norm_major = min(10, state.nt_major)
+        norm_minor = state.nt_minor if state.nt_minor is not None else 0
         p.evidence["nt_version"] = f"{norm_major}.{norm_minor}"
 
-    if explicit_confidence:
-        update_confidence(p, p.precision)
-    else:
-        fallback_conf = defaults.confidence if defaults else None
-        if fallback_conf is None:
-            fallback_conf = _fallback_confidence_for_precision(p.precision)
-        p.confidence = max(p.confidence, fallback_conf)
-
-    return p
-
-
-def _detect_product(tl: str) -> tuple[str | None, bool]:
-    for product, patterns in WINDOWS_PRODUCT_PATTERNS:
-        for token in patterns:
-            if token in tl:
-                alias = token.startswith("win") and not token.startswith("windows")
-                return product, alias
-    return None, False
+    update_confidence(p, p.precision)
 
 
 def _detect_edition(tl: str) -> str | None:
@@ -250,18 +267,8 @@ def _derive_precision(
         return "build"
     if patch is not None and patch != 0:
         return "patch"
-    if minor not in (None, 0):
+    if minor is not None:
         return "minor"
     if major is not None:
         return "major"
     return "product"
-
-
-def _fallback_confidence_for_precision(precision: str) -> float:
-    return {
-        "build": 0.7,
-        "patch": 0.7,
-        "minor": 0.7,
-        "major": 0.7,
-        "product": 0.6,
-    }.get(precision, 0.6)

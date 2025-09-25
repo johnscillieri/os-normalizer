@@ -88,7 +88,7 @@ WINDOWS_NT_CLIENT_MAP = {
     (4, 90): "Windows Me",
     (5, 0): "Windows 2000",
     (5, 1): "Windows XP",
-    (5, 2): "Windows XP x64/Server 2003",  # NT 5.2 often maps to XP x64 on client
+    (5, 2): "Windows XP x64",
     (6, 0): "Windows Vista",
     (6, 1): "Windows 7",
     (6, 2): "Windows 8",
@@ -100,7 +100,6 @@ WINDOWS_NT_CLIENT_MAP = {
 WINDOWS_NT_SERVER_MAP = {
     (4, 0): "Windows NT 4.0 Server",
     (5, 0): "Windows 2000 Server",
-    (5, 1): "Windows XP/Server 2003",  # rarely used for server detection
     (5, 2): "Windows Server 2003",
     (6, 0): "Windows Server 2008",
     (6, 1): "Windows Server 2008 R2",
