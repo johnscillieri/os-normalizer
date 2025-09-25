@@ -13,15 +13,16 @@ def test_str_windows_build():
         vendor="Microsoft",
         product="Windows 11",
         edition="Enterprise",
-        channel="23H2",
+        version_major=10,
+        version_minor=0,
         version_build="22631",
         kernel_name="nt",
-        kernel_version="10.0.22631",
+        kernel_version="23H2",
         arch="x86_64",
         precision="build",
         confidence=0.85,
     )
-    assert str(p) == ("Microsoft Windows 11 build 22631 Enterprise (23H2) x86_64 [kernel: nt 10.0.22631] {build:0.85}")
+    assert str(p) == ("Microsoft Windows 11 10.0 build 22631 Enterprise x86_64 [kernel: nt 23H2] {build:0.85}")
 
 
 def test_str_linux_ubuntu_patch():

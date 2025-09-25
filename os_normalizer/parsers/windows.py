@@ -59,7 +59,7 @@ PRODUCT_DEFAULTS: dict[str, ProductDefaults] = {
     "Windows 8": ProductDefaults(6, 2, None, "9200", "6.2"),
     "Windows 8.1": ProductDefaults(6, 3, None, "9600", "6.3"),
     "Windows 10": ProductDefaults(10, 0, None, None, None),
-    "Windows 11": ProductDefaults(11, 0, None, None, None),
+    "Windows 11": ProductDefaults(10, 0, None, None, None),
     "Windows Server 2003": ProductDefaults(5, 2, None, "3790", "5.2"),
     "Windows Server 2008": ProductDefaults(6, 0, None, "6002", "6.0"),
     "Windows Server 2008 R2": ProductDefaults(6, 1, None, "7600", "6.1"),
@@ -69,7 +69,7 @@ PRODUCT_DEFAULTS: dict[str, ProductDefaults] = {
     "Windows Server 2016": ProductDefaults(10, 0, None, None, None),
     "Windows Server 2019": ProductDefaults(10, 0, None, None, None),
     "Windows Server 2022": ProductDefaults(10, 0, None, None, None),
-    "Windows Server 2025": ProductDefaults(11, 0, None, None, None),
+    "Windows Server 2025": ProductDefaults(10, 0, None, None, None),
 }
 
 

@@ -47,6 +47,12 @@ class OSData:
     def __str__(self) -> str:  # pragma: no cover - formatting helper
         parts: list[str] = []
 
+        """
+        if windows
+        vendor, product, codename, (kernel_version if != major.minor), version
+        major.minor.build, += patch if !=0, architecture
+        """
+
         # Prefer vendor + product; fallback to pretty_name; then family
         name_bits = [x for x in (self.vendor, self.product) if x]
         if name_bits:
