@@ -3,6 +3,14 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [0.4.1] - 2025-09-25
+
+- Added: Broadened Windows product aliases (e.g., Win11, Win2k) and recognized the macOS 26 codename `Tahoe`.
+- Changed: Windows normalization now always fills NT version major/minor fields and treats marketing releases (21H2/24H2/etc.) as the kernel version for richer telemetry.
+- Changed: Windows CPE generation derives release-channel tokens from build numbers so clients emit `windows_10_21h2`, `windows_11_24h2`, and similar slugs automatically.
+- Fixed: Windows 11 and Server 2025 inputs no longer fall back to Windows 10 defaults, and legacy server builds keep their correct product names.
+- Fixed: Windows `OSData` string formatting avoids duplicate fragments and skips redundant kernel numbers when printing friendly names.
+
 ## [0.4.0] - 2025-09-22
 
 - Changed: Windows parser now normalizes typoed `windws` tokens, infers server editions from `Windows 2008/2012/2003` strings, and derives build numbers from generic `6.x.yyyy` patterns.
@@ -52,7 +60,8 @@ This file adheres to Keep a Changelog and Semantic Versioning.
 
 - Initial release.
 
-[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.4.0...HEAD
+[Unreleased]: https://github.com/johnscillieri/os-normalizer/compare/v0.4.1...HEAD
+[0.4.1]: https://github.com/johnscillieri/os-normalizer/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.4...v0.4.0
 [0.3.4]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.3...v0.3.4
 [0.3.3]: https://github.com/johnscillieri/os-normalizer/compare/v0.3.2...v0.3.3
