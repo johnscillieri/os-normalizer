@@ -7,7 +7,7 @@ independent of parsing logic.
 from os_normalizer import OSData
 
 
-def test_str_windows_build():
+def test_str_windows_11_build():
     p = OSData(
         family="windows",
         vendor="Microsoft",
@@ -22,7 +22,27 @@ def test_str_windows_build():
         precision="build",
         confidence=0.85,
     )
-    assert str(p) == ("Microsoft Windows 11 10.0 build 22631 Enterprise x86_64 [kernel: nt 23H2] {build:0.85}")
+    assert str(p) == "Microsoft Windows 11 Enterprise (23H2) 10.0.22631 x86_64"
+
+
+def test_str_windows_7_build():
+    p = OSData(
+        family="windows",
+        vendor="Microsoft",
+        product="Windows 7",
+        edition="Professional",
+        version_major=6,
+        version_minor=1,
+        version_build="7600",
+        kernel_name="nt",
+        kernel_version="6.1",
+        arch="x86_64",
+        precision="build",
+        confidence=0.85,
+        evidence={"hit": "windows", "nt_version": "6.1"},
+        os_key="cpe:2.3:o:microsoft:windows_7:6.1.7600:*:*:*:*:*:x64:*",
+    )
+    assert str(p) == "Microsoft Windows 7 Professional 6.1.7600 x86_64"
 
 
 def test_str_linux_ubuntu_patch():
@@ -40,7 +60,7 @@ def test_str_linux_ubuntu_patch():
         precision="patch",
         confidence=0.8,
     )
-    assert str(p) == ("Canonical Ubuntu 22.4.4 (LTS) x86_64 [kernel: linux 5.15.0-122-generic] {patch:0.80}")
+    assert str(p) == "Canonical Ubuntu 22.4.4 (LTS) x86_64 [kernel: linux 5.15.0-122-generic] {patch:0.80}"
 
 
 def test_str_macos_major_arm64():

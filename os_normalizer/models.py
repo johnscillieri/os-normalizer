@@ -47,11 +47,8 @@ class OSData:
     def __str__(self) -> str:  # pragma: no cover - formatting helper
         parts: list[str] = []
 
-        """
-        if windows
-        vendor, product, codename, (kernel_version if != major.minor), version
-        major.minor.build, += patch if !=0, architecture
-        """
+        if self.family == "windows":
+            return _format_windows(self)
 
         # Prefer vendor + product; fallback to pretty_name; then family
         name_bits = [x for x in (self.vendor, self.product) if x]
@@ -145,6 +142,19 @@ class OSData:
         width = max(len(name) for name, _ in rows) if rows else 0
         lines = [f"{name:<{width}} : {sval}" for name, sval in rows]
         return "\n".join(lines)
+
+
+def _format_windows(p: OSData) -> str:
+    parts = [
+        p.vendor,
+        p.product,
+        p.edition,
+        p.codename,
+        f"({p.kernel_version})" if p.kernel_version != f"{p.version_major}.{p.version_minor}" else "",
+        f"{p.version_major}.{p.version_minor}.{p.version_build}",
+        p.arch,
+    ]
+    return " ".join(part for part in parts if part)
 
 
 if __name__ == "__main__":
