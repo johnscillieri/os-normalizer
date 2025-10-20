@@ -1281,6 +1281,24 @@ WINDOWS_OSDATA_CASES = [
         ),
     ),
     (
+        "Windows 10.0.22631",
+        None,
+        OSData(
+            family="windows",
+            vendor="Microsoft",
+            product="Windows 11",
+            version_major=10,
+            version_minor=0,
+            version_build="22631",
+            kernel_name="nt",
+            kernel_version="23H2",
+            precision="build",
+            confidence=0.85,
+            evidence={"hit": "windows", "nt_version": "10.0"},
+            os_key="cpe:2.3:o:microsoft:windows_11_23h2:10.0.22631:*:*:*:*:*:x64:*",
+        ),
+    ),
+    (
         "Windows 7 SP1 Professional x86",
         None,
         OSData(

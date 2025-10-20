@@ -157,8 +157,11 @@ def _apply_build_context(state: VersionState, product: str | None, server_hint: 
         return product, server_hint
 
     product_from_build, channel, is_server_build = _lookup_build(build_num, server_hint)
-    if product_from_build and not product:
-        product = product_from_build
+    if product_from_build:
+        if not product:
+            product = product_from_build
+        elif product != product_from_build and _build_inference_is_more_precise(product, product_from_build):
+            product = product_from_build
     if is_server_build:
         server_hint = True
     state.channel = channel
@@ -248,6 +251,15 @@ def _lookup_build(build_num: int, server_hint: bool) -> tuple[str | None, str | 
             candidate = (prod, channel, is_server)
             break
     return candidate
+
+
+def _build_inference_is_more_precise(existing: str, inferred: str) -> bool:
+    """Return True when the build map provides a more specific client SKU."""
+    if existing in {"Windows 10", "Windows 10/11"} and inferred.startswith("Windows 11"):
+        return True
+    if existing == "Windows 10/11" and inferred == "Windows 10":
+        return True
+    return False
 
 
 def _product_from_nt(major: int, minor: int, server_hint: bool) -> str | None:
