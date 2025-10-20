@@ -20,7 +20,8 @@ if TYPE_CHECKING:
 
 VERSION_PATTERN = re.compile(r"\b(\d+)\.(\d+)\.(\d+)(?:\.(\d+))?\b")
 NT_PATTERN = re.compile(r"\bnt\s*(\d+)(?:\.(\d+))?", re.IGNORECASE)
-BUILD_PATTERN = re.compile(r"\bbuild\s*(?:number\s*)?(\d{3,5})\b", re.IGNORECASE)
+BUILD_PATTERN = re.compile(r"\bbuild\s*(?:number\s*)?[:=\s-]*?(\d{3,5})\b", re.IGNORECASE)
+KERNEL_PATTERN = re.compile(r"\bkernel\s*[:=\s-]*?(\d+)(?:\.(\d+))?", re.IGNORECASE)
 SP_PATTERN = re.compile(r"\bsp(\d)\b", re.IGNORECASE)
 
 EDITION_KEYWORDS: list[tuple[str, str]] = [
@@ -141,6 +142,13 @@ def _extract_version_state(text: str) -> VersionState:
             state.nt_minor = state.nt_minor if state.nt_minor is not None else minr
         state.explicit = True
 
+    if state.nt_major is None:
+        kernel_match = KERNEL_PATTERN.search(text)
+        if kernel_match:
+            state.nt_major = int(kernel_match.group(1))
+            state.nt_minor = int(kernel_match.group(2)) if kernel_match.group(2) else 0
+            state.explicit = True
+
     if state.build is None:
         build_match = BUILD_PATTERN.search(text)
         if build_match:
@@ -157,9 +165,8 @@ def _apply_build_context(state: VersionState, product: str | None, server_hint: 
         return product, server_hint
 
     product_from_build, channel, is_server_build = _lookup_build(build_num, server_hint)
-    if product_from_build:
-        if not product or _build_inference_should_replace(product, product_from_build):
-            product = product_from_build
+    if product_from_build and (not product or _build_inference_should_replace(product, product_from_build)):
+        product = product_from_build
     if is_server_build:
         server_hint = True
     state.channel = channel
@@ -190,11 +197,18 @@ def _apply_version_numbers(p: OSData, defaults: ProductDefaults, state: VersionS
 def _set_kernel_version(p: OSData, defaults: ProductDefaults | None, state: VersionState) -> None:
     """Populate kernel_version using explicit tokens, build channel, or defaults."""
     kernel_version: str | None = None
-    if state.explicit and state.nt_major is not None:
-        if state.nt_major >= 10 and state.channel:
-            kernel_version = state.channel
-        elif state.nt_minor is not None:
+    if (
+        state.explicit
+        and state.channel
+        and (state.nt_major is None or state.nt_major >= 10)
+        and (defaults is None or defaults.kernel_version is None)
+    ):
+        kernel_version = state.channel
+    elif state.explicit and state.nt_major is not None:
+        if state.nt_minor is not None:
             kernel_version = f"{state.nt_major}.{state.nt_minor}"
+        elif state.nt_major >= 10 and state.channel:
+            kernel_version = state.channel
     if kernel_version is None and defaults and defaults.kernel_version:
         kernel_version = defaults.kernel_version
     if kernel_version:
