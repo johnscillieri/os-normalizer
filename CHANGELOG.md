@@ -3,6 +3,10 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [0.4.3] - 2025-10-20
+
+- Fixed: Windows build parsing and inconsistent strings
+
 ## [0.4.2] - 2025-10-20
 
 - Fixed: Windows product fingerprinting by build number
