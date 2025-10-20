@@ -158,9 +158,7 @@ def _apply_build_context(state: VersionState, product: str | None, server_hint: 
 
     product_from_build, channel, is_server_build = _lookup_build(build_num, server_hint)
     if product_from_build:
-        if not product:
-            product = product_from_build
-        elif product != product_from_build and _build_inference_is_more_precise(product, product_from_build):
+        if not product or _build_inference_should_replace(product, product_from_build):
             product = product_from_build
     if is_server_build:
         server_hint = True
@@ -253,13 +251,16 @@ def _lookup_build(build_num: int, server_hint: bool) -> tuple[str | None, str | 
     return candidate
 
 
-def _build_inference_is_more_precise(existing: str, inferred: str) -> bool:
-    """Return True when the build map provides a more specific client SKU."""
-    if existing in {"Windows 10", "Windows 10/11"} and inferred.startswith("Windows 11"):
-        return True
-    if existing == "Windows 10/11" and inferred == "Windows 10":
-        return True
-    return False
+def _build_inference_should_replace(existing: str, inferred: str) -> bool:
+    """Return True when build metadata should override a detected product label."""
+    existing_lower = existing.lower()
+    inferred_lower = inferred.lower()
+
+    if existing_lower == inferred_lower:
+        return False
+    if inferred_lower.startswith(existing_lower):
+        return False
+    return True
 
 
 def _product_from_nt(major: int, minor: int, server_hint: bool) -> str | None:

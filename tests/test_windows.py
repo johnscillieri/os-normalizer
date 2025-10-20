@@ -1338,6 +1338,24 @@ WINDOWS_OSDATA_CASES = [
             os_key="cpe:2.3:o:microsoft:windows_8.1:*:*:*:*:*:*:x64:*",
         ),
     ),
+    (
+        "Windows Windows Server 2016 10.0.20348",
+        None,
+        OSData(
+            family="windows",
+            vendor="Microsoft",
+            product="Windows Server 2022",
+            version_major=10,
+            version_minor=0,
+            version_build="20348",
+            kernel_name="nt",
+            kernel_version="21H2",
+            precision="build",
+            confidence=0.85,
+            evidence={"hit": "windows", "nt_version": "10.0"},
+            os_key="cpe:2.3:o:microsoft:windows_11_23h2:10.0.22631:*:*:*:*:*:x64:*",
+        ),
+    ),
 ]
 
 
