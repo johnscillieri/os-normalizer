@@ -3,6 +3,10 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [0.4.2] - 2025-10-20
+
+- Fixed: Windows product fingerprinting by build number
+
 ## [0.4.1] - 2025-09-25
 
 - Added: Broadened Windows product aliases (e.g., Win11, Win2k) and recognized the macOS 26 codename `Tahoe`.
