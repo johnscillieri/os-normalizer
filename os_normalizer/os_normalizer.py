@@ -30,6 +30,9 @@ PRECISION_ORDER = {
 def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, dict[str, Any]]:
     t = text.lower()
     ev = {}
+    if "harmonyos" in t:
+        ev["hit"] = "harmonyos"
+        return "harmonyos", 0.6, ev
     # Obvious network signals first
     if any(
         x in t
@@ -101,7 +104,7 @@ def normalize_os(text: str, data: dict | None = None) -> OSData:
         p = parse_macos(text, data, p)
     elif fam == "linux":
         p = parse_linux(text, data, p)
-    elif fam in ("android", "ios"):
+    elif fam in ("android", "ios", "harmonyos"):
         p = parse_mobile(text, data, p)
     elif fam == "bsd":
         p = parse_bsd(text, data, p)

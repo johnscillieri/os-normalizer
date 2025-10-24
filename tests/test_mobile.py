@@ -82,6 +82,39 @@ MOBILE_OSDATA_CASES = [
             os_key="cpe:2.3:o:google:android:12.1:*:*:*:*:*:*:*",
         ),
     ),
+    (
+        "HarmonyOS 4.2.0",
+        None,
+        OSData(
+            family="harmonyos",
+            vendor="Huawei",
+            product="HarmonyOS",
+            version_major=4,
+            version_minor=2,
+            version_patch=0,
+            precision="patch",
+            confidence=0.8,
+            evidence={"hit": "harmonyos"},
+            os_key="cpe:2.3:o:huawei:harmonyos:4.2.0:*:*:*:*:*:*:*",
+        ),
+    ),
+    (
+        "Huawei HARMONYOS 5.0.0.107 SP8",
+        None,
+        OSData(
+            family="harmonyos",
+            vendor="Huawei",
+            product="HarmonyOS",
+            version_major=5,
+            version_minor=0,
+            version_patch=0,
+            version_build="107",
+            precision="build",
+            confidence=0.85,
+            evidence={"hit": "harmonyos"},
+            os_key="cpe:2.3:o:huawei:harmonyos:5.0.0:107:*:*:*:*:*:*:*",
+        ),
+    ),
 ]
 
 
