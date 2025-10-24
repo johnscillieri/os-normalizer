@@ -2,6 +2,7 @@
 
 import re
 
+from os_normalizer.constants import OSFamily, PrecisionLevel
 from os_normalizer.helpers import update_confidence
 from os_normalizer.models import OSData
 
@@ -14,7 +15,9 @@ HUAWEI_MODEL_RE = re.compile(r"\b(S\d{4}-\d{2}[A-Z-]+|CE\d{4}[A-Z-]*|AR\d{3,4}[A
 def parse_huawei(text: str, p: OSData) -> OSData:
     p.vendor = "Huawei"
     p.product = "VRP"
-    p.family = p.family or "network-os"
+    if not isinstance(p.family, OSFamily):
+        p.family = OSFamily(p.family) if p.family in OSFamily._value2member_map_ else None
+    p.family = p.family or OSFamily.NETWORK
     p.kernel_name = "vrp"
 
     raw = HUAWEI_RAWVER_RE.search(text)
@@ -26,7 +29,7 @@ def parse_huawei(text: str, p: OSData) -> OSData:
         maj, r, _c = vm.group(1), vm.group(2), vm.group(3)
         p.version_major = int(maj)
         p.version_minor = int(r)
-        p.precision = "minor"
+        p.precision = PrecisionLevel.MINOR
 
     mdl = HUAWEI_MODEL_RE.search(text)
     if mdl:
@@ -34,5 +37,8 @@ def parse_huawei(text: str, p: OSData) -> OSData:
 
     p.build_id = p.version_build or p.build_id
 
-    update_confidence(p, p.precision if p.precision in ("minor", "build") else "major")
+    update_confidence(
+        p,
+        p.precision if p.precision in (PrecisionLevel.MINOR, PrecisionLevel.BUILD) else PrecisionLevel.MAJOR,
+    )
     return p

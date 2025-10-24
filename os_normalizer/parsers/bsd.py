@@ -3,6 +3,7 @@
 import re
 from typing import Any
 
+from os_normalizer.constants import PrecisionLevel
 from os_normalizer.helpers import (
     parse_semver_like,
     precision_from_parts,
@@ -48,7 +49,7 @@ def parse_bsd(text: str, data: dict[str, Any], p: OSData) -> OSData:
     # Prefer variant-anchored version pattern; fall back to generic semver
     x, y, z = _extract_version(text)
     p.version_major, p.version_minor, p.version_patch = x, y, z
-    p.precision = precision_from_parts(x, y, z, None) if x else "product"
+    p.precision = precision_from_parts(x, y, z, None) if x else PrecisionLevel.PRODUCT
 
     # Channel from explicit markers/suffixes
     ch = BSD_CHANNEL_RE.search(text)

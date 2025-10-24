@@ -9,7 +9,7 @@ from __future__ import annotations
 
 from typing import TYPE_CHECKING
 
-from os_normalizer.constants import WINDOWS_BUILD_MAP
+from os_normalizer.constants import OSFamily, WINDOWS_BUILD_MAP
 
 if TYPE_CHECKING:
     from .models import OSData
@@ -39,12 +39,19 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
 
     strategy controls version/update selection rules.
     """
-    fam = (p.family or "").lower()
+    raw_family = p.family
+    family = (
+        raw_family
+        if isinstance(raw_family, OSFamily)
+        else OSFamily._value2member_map_.get(str(raw_family).lower())
+        if raw_family
+        else None
+    )
     vendor = (p.vendor or "").lower() if p.vendor else None
     product = (p.product or "").lower() if p.product else ""
 
     # Windows
-    if fam == "windows":
+    if family == OSFamily.WINDOWS:
         vtok = "microsoft"
         prod_map = {
             "windows 7": "windows_7",
@@ -68,11 +75,11 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
         return vtok, base, "windows"
 
     # macOS
-    if fam == "macos":
+    if family == OSFamily.MACOS:
         return "apple", "macos", "macos"
 
     # Linux distros (use distro when present)
-    if fam == "linux":
+    if family == OSFamily.LINUX:
         d = (p.distro or "").lower()
         if d == "ubuntu":
             return "canonical", "ubuntu_linux", "ubuntu"
@@ -93,7 +100,7 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
         return vendor or "linux", product or "linux", "linux"
 
     # BSDs
-    if fam == "bsd":
+    if family == OSFamily.BSD:
         if product and "freebsd" in product:
             return "freebsd", "freebsd", "freebsd"
         if product and "openbsd" in product:
@@ -103,7 +110,7 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
         return vendor or "bsd", product or "bsd", "bsd"
 
     # Network OS
-    if fam == "network-os":
+    if family == OSFamily.NETWORK:
         if vendor == "cisco":
             if product and ("ios xe" in product or "ios-xe" in product):
                 return "cisco", "ios_xe", "ios_xe"
@@ -120,15 +127,20 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
         return vendor or "network", (product or "firmware").replace(" ", "_"), "firmware"
 
     # Mobile
-    if fam == "android":
-        return "google", "android", "android"
-    if fam == "ios":
-        return "apple", "iphone_os", "ios"
-    if fam == "harmonyos":
-        return "huawei", "harmonyos", "harmonyos"
+    if family == OSFamily.ANDROID:
+        return "google", "android", OSFamily.ANDROID.value
+    if family == OSFamily.IOS:
+        return "apple", "iphone_os", OSFamily.IOS.value
+    if family == OSFamily.HARMONYOS:
+        return "huawei", "harmonyos", OSFamily.HARMONYOS.value
 
     # Fallback
-    return (vendor or fam or "unknown"), (product or (fam or "unknown")).replace(" ", "_"), fam or "unknown"
+    family_value = family.value if family else (str(raw_family).lower() if raw_family else "unknown")
+    return (
+        vendor or family_value or "unknown",
+        (product or family_value).replace(" ", "_"),
+        family_value,
+    )
 
 
 def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:

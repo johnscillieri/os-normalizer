@@ -2,6 +2,7 @@
 
 import re
 
+from os_normalizer.constants import CISCO_TRAIN_NAMES, OSFamily, PrecisionLevel
 from os_normalizer.helpers import update_confidence
 from os_normalizer.models import OSData
 
@@ -26,7 +27,9 @@ CISCO_EDITION_RE = re.compile(
 
 def parse_cisco(text: str, p: OSData) -> OSData:
     p.vendor = "Cisco"
-    p.family = p.family or "network-os"
+    if not isinstance(p.family, OSFamily):
+        p.family = OSFamily(p.family) if p.family in OSFamily._value2member_map_ else None
+    p.family = p.family or OSFamily.NETWORK
 
     # Detect product line
     if CISCO_IOS_XE_RE.search(text):
@@ -53,14 +56,16 @@ def parse_cisco(text: str, p: OSData) -> OSData:
                 p.version_patch = int(num[2])
             p.version_build = ver
             p.precision = (
-                "patch" if p.version_patch is not None else ("minor" if p.version_minor is not None else "major")
+                PrecisionLevel.PATCH
+                if p.version_patch is not None
+                else (PrecisionLevel.MINOR if p.version_minor is not None else PrecisionLevel.MAJOR)
             )
 
     # Image filename
     img = CISCO_IMAGE_RE.search(text)
     if img:
         p.build_id = img.group(1)
-        p.precision = "build"
+        p.precision = PrecisionLevel.BUILD
 
     # If NX-OS and only got version via filename, parse nxos.A.B.C.bin
     if not p.version_major and p.build_id:
@@ -70,7 +75,7 @@ def parse_cisco(text: str, p: OSData) -> OSData:
             p.version_minor = int(m.group(2))
             p.version_patch = int(m.group(3))
             p.version_build = f"{p.version_major}.{p.version_minor}.{p.version_patch}"
-            p.precision = "patch"
+            p.precision = PrecisionLevel.PATCH
 
     # Model
     mm = CISCO_MODEL_RE.search(text)
@@ -83,8 +88,6 @@ def parse_cisco(text: str, p: OSData) -> OSData:
         p.edition = fl.group(1).lower()
 
     # Train codename
-    from os_normalizer.constants import CISCO_TRAIN_NAMES
-
     tl = text.lower()
     for train in CISCO_TRAIN_NAMES:
         if train.lower() in tl:
@@ -92,5 +95,8 @@ def parse_cisco(text: str, p: OSData) -> OSData:
             break
 
     # Boost confidence based on precision
-    update_confidence(p, p.precision if p.precision in ("build", "patch") else "minor")
+    update_confidence(
+        p,
+        p.precision if p.precision in (PrecisionLevel.BUILD, PrecisionLevel.PATCH) else PrecisionLevel.MINOR,
+    )
     return p

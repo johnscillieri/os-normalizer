@@ -7,6 +7,7 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from os_normalizer.constants import (
+    PrecisionLevel,
     WINDOWS_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
@@ -289,13 +290,13 @@ def _derive_precision(
     minor: int | None,
     patch: int | None,
     build: str | None,
-) -> str:
+) -> PrecisionLevel:
     if build:
-        return "build"
+        return PrecisionLevel.BUILD
     if patch is not None and patch != 0:
-        return "patch"
+        return PrecisionLevel.PATCH
     if minor is not None:
-        return "minor"
+        return PrecisionLevel.MINOR
     if major is not None:
-        return "major"
-    return "product"
+        return PrecisionLevel.MAJOR
+    return PrecisionLevel.PRODUCT

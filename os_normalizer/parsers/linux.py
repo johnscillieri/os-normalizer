@@ -3,6 +3,7 @@
 import re
 from typing import Any, Optional
 
+from os_normalizer.constants import PrecisionLevel
 from os_normalizer.helpers import parse_os_release, update_confidence
 from os_normalizer.models import OSData
 
@@ -31,7 +32,7 @@ def parse_linux(text: str, data: dict[str, Any], p: OSData) -> OSData:
         _apply_os_release(osrel, p)
     else:
         p.product = p.product or "Linux"
-        p.precision = "family"
+        p.precision = PrecisionLevel.FAMILY
 
     update_confidence(p, p.precision)
     return p
@@ -92,13 +93,13 @@ def _apply_os_release(osrel: dict[str, Any], p: OSData) -> None:
 
     # Precision from version parts
     if p.version_patch is not None:
-        p.precision = "patch"
+        p.precision = PrecisionLevel.PATCH
     elif p.version_minor is not None:
-        p.precision = "minor"
+        p.precision = PrecisionLevel.MINOR
     elif p.version_major is not None:
-        p.precision = "major"
+        p.precision = PrecisionLevel.MAJOR
     else:
-        p.precision = "family"
+        p.precision = PrecisionLevel.FAMILY
 
 
 def _apply_version_id(vid: Any, p: OSData) -> None:
