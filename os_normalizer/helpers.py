@@ -3,7 +3,7 @@
 import re
 from typing import Any
 
-from .constants import ARCH_SYNONYMS
+from .constants import ARCH_SYNONYMS, PrecisionLevel
 from .models import OSData
 
 
@@ -34,17 +34,17 @@ def precision_from_parts(
     minor: int | None,
     patch: int | None,
     build: str | None,
-) -> str:
+) -> PrecisionLevel:
     """Derive a precision label from version components."""
     if build:
-        return "build"
+        return PrecisionLevel.BUILD
     if patch is not None:
-        return "patch"
+        return PrecisionLevel.PATCH
     if minor is not None:
-        return "minor"
+        return PrecisionLevel.MINOR
     if major is not None:
-        return "major"
-    return "product"
+        return PrecisionLevel.MAJOR
+    return PrecisionLevel.PRODUCT
 
 
 def canonical_key(p: OSData) -> str:
@@ -92,16 +92,24 @@ def parse_os_release(blob_text: str) -> dict[str, Any]:
     return out
 
 
-def update_confidence(p: OSData, precision: str) -> None:
+def update_confidence(p: OSData, precision: PrecisionLevel | str) -> None:
     """Boost confidence based on the determined precision level.
 
     The mapping mirrors the original ad-hoc values used throughout the monolithic file.
     """
+    if isinstance(precision, PrecisionLevel):
+        level = precision
+    else:
+        try:
+            level = PrecisionLevel(str(precision))
+        except ValueError:
+            level = PrecisionLevel.UNKNOWN
+
     boost_map = {
-        "build": 0.85,
-        "patch": 0.80,
-        "minor": 0.75,
-        "major": 0.70,
-        "product": 0.60,
+        PrecisionLevel.BUILD: 0.85,
+        PrecisionLevel.PATCH: 0.80,
+        PrecisionLevel.MINOR: 0.75,
+        PrecisionLevel.MAJOR: 0.70,
+        PrecisionLevel.PRODUCT: 0.60,
     }
-    p.confidence = max(p.confidence, boost_map.get(precision, 0.5))
+    p.confidence = max(p.confidence, boost_map.get(level, 0.5))

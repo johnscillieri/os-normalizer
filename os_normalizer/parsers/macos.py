@@ -3,7 +3,7 @@
 import re
 from typing import Any
 
-from os_normalizer.constants import MACOS_ALIASES, MACOS_DARWIN_MAP
+from os_normalizer.constants import MACOS_ALIASES, MACOS_DARWIN_MAP, PRECISION_ORDER, PrecisionLevel
 from os_normalizer.helpers import update_confidence
 from os_normalizer.models import OSData
 
@@ -13,10 +13,6 @@ DARWIN_RE = re.compile(
     re.IGNORECASE,
 )
 MACOS_VER_FALLBACK_RE = re.compile(r"\bmacos\s?(\d+)(?:\.(\d+))?", re.IGNORECASE)
-
-# Local precision order for simple comparisons
-_PRECISION_ORDER = {"family": 0, "product": 1, "major": 2, "minor": 3, "patch": 4, "build": 5}
-
 
 def parse_macos(text: str, data: dict[str, Any], p: OSData) -> OSData:
     """Populate an OSData instance with macOS-specific details."""
@@ -50,7 +46,7 @@ def _apply_alias_hint(tl: str, p: OSData) -> None:
             parts = normalized.split()
             if len(parts) == 2 and parts[1].isdigit():
                 p.version_major = int(parts[1])
-                p.precision = _max_precision(p.precision, "major")
+                p.precision = _max_precision(p.precision, PrecisionLevel.MAJOR)
 
 
 def _apply_darwin_mapping(t: str, p: OSData) -> None:
@@ -66,12 +62,12 @@ def _apply_darwin_mapping(t: str, p: OSData) -> None:
         p.product = prod
         if ver.isdigit():
             p.version_major = int(ver)
-            p.precision = _max_precision(p.precision, "major")
+            p.precision = _max_precision(p.precision, PrecisionLevel.MAJOR)
         else:
             x, y, *_ = ver.split(".")
             p.version_major = int(x)
             p.version_minor = int(y)
-            p.precision = _max_precision(p.precision, "minor")
+            p.precision = _max_precision(p.precision, PrecisionLevel.MINOR)
         p.codename = code
 
 
@@ -84,9 +80,9 @@ def _apply_version_fallback(t: str, p: OSData) -> None:
     p.version_major = int(mm.group(1))
     if mm.group(2):
         p.version_minor = int(mm.group(2))
-        p.precision = _max_precision(p.precision, "minor")
+        p.precision = _max_precision(p.precision, PrecisionLevel.MINOR)
     else:
-        p.precision = _max_precision(p.precision, "major")
+        p.precision = _max_precision(p.precision, PrecisionLevel.MAJOR)
 
 
 def _apply_codename_fallback(tl: str, p: OSData) -> None:
@@ -98,14 +94,16 @@ def _apply_codename_fallback(tl: str, p: OSData) -> None:
             # Provide at least major version from the map
             if isinstance(ver, str) and ver.isdigit():
                 p.version_major = int(ver)
-                p.precision = _max_precision(p.precision, "major")
+                p.precision = _max_precision(p.precision, PrecisionLevel.MAJOR)
             elif isinstance(ver, str) and "." in ver:
                 x, *_ = ver.split(".")
                 if x.isdigit():
                     p.version_major = int(x)
-                    p.precision = _max_precision(p.precision, "major")
+                    p.precision = _max_precision(p.precision, PrecisionLevel.MAJOR)
             break
 
 
-def _max_precision(current: str, new_label: str) -> str:
-    return new_label if _PRECISION_ORDER.get(new_label, 0) > _PRECISION_ORDER.get(current, 0) else current
+def _max_precision(current: PrecisionLevel, new_label: PrecisionLevel) -> PrecisionLevel:
+    if not isinstance(current, PrecisionLevel):
+        current = PrecisionLevel(current)
+    return new_label if PRECISION_ORDER.get(new_label, 0) > PRECISION_ORDER.get(current, 0) else current

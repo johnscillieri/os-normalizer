@@ -2,6 +2,7 @@
 
 import re
 
+from os_normalizer.constants import OSFamily, PrecisionLevel
 from os_normalizer.helpers import update_confidence
 from os_normalizer.models import OSData
 
@@ -14,7 +15,9 @@ JUNOS_MODEL_RE = re.compile(r"\b(EX\d{3,4}-\d{2}[A-Z]?|QFX\d{3,4}\w*|SRX\d{3,4}\
 def parse_juniper(text: str, p: OSData) -> OSData:
     p.vendor = "Juniper"
     p.product = "Junos"
-    p.family = p.family or "network-os"
+    if not isinstance(p.family, OSFamily):
+        p.family = OSFamily(p.family) if p.family in OSFamily._value2member_map_ else None
+    p.family = p.family or OSFamily.NETWORK
     p.kernel_name = "junos"
 
     vm = JUNOS_VER_RE.search(text)
@@ -27,16 +30,19 @@ def parse_juniper(text: str, p: OSData) -> OSData:
         if len(nums) >= 2:
             p.version_minor = int(nums[1])
         p.version_build = ver
-        p.precision = "minor"
+        p.precision = PrecisionLevel.MINOR
 
     pkg = JUNOS_PKG_RE.search(text)
     if pkg:
         p.build_id = pkg.group(1)
-        p.precision = "build"
+        p.precision = PrecisionLevel.BUILD
 
     mdl = JUNOS_MODEL_RE.search(text)
     if mdl:
         p.hw_model = mdl.group(1)
 
-    update_confidence(p, p.precision if p.precision in ("build", "minor") else "major")
+    update_confidence(
+        p,
+        p.precision if p.precision in (PrecisionLevel.BUILD, PrecisionLevel.MINOR) else PrecisionLevel.MAJOR,
+    )
     return p

@@ -3,6 +3,7 @@ from typing import Any, Iterable
 from dataclasses import replace, fields
 import copy
 
+from os_normalizer.constants import OSFamily, PRECISION_ORDER, PrecisionLevel
 from os_normalizer.helpers import extract_arch_from_text, precision_from_parts, update_confidence
 from os_normalizer.cpe import build_cpe23
 from os_normalizer.models import OSData
@@ -13,26 +14,15 @@ from os_normalizer.parsers.mobile import parse_mobile
 from os_normalizer.parsers.network import parse_network
 from os_normalizer.parsers.windows import parse_windows
 
-PRECISION_ORDER = {
-    "build": 6,
-    "patch": 5,
-    "minor": 4,
-    "major": 3,
-    "product": 2,
-    "family": 1,
-    "unknown": 0,
-}
-
-
 # ============================================================
 # Family detection (orchestrator logic)
 # ============================================================
-def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, dict[str, Any]]:
+def detect_family(text: str, data: dict[str, Any]) -> tuple[OSFamily | None, float, dict[str, Any]]:
     t = text.lower()
     ev = {}
-    if "harmonyos" in t:
-        ev["hit"] = "harmonyos"
-        return "harmonyos", 0.6, ev
+    if OSFamily.HARMONYOS.value in t:
+        ev["hit"] = OSFamily.HARMONYOS
+        return OSFamily.HARMONYOS, 0.6, ev
     # Obvious network signals first
     if any(
         x in t
@@ -51,35 +41,40 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[str | None, float, d
         ]
     ):
         # Special handling for 'ios' - if it's just 'ios' without 'cisco', treat as mobile, not network
-        if "ios " in t and "cisco" not in t:
-            ev["hit"] = "ios"
-            return "ios", 0.6, ev
+        if f"{OSFamily.IOS.value} " in t and "cisco" not in t:
+            ev["hit"] = OSFamily.IOS
+            return OSFamily.IOS, 0.6, ev
 
-        ev["hit"] = "network-os"
-        return "network-os", 0.7, ev
+        ev["hit"] = OSFamily.NETWORK
+        return OSFamily.NETWORK, 0.7, ev
     # Linux
-    if "linux" in t or any(k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")):
-        ev["hit"] = "linux"
-        return "linux", 0.6, ev
+    if OSFamily.LINUX.value in t or any(k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")):
+        ev["hit"] = OSFamily.LINUX
+        return OSFamily.LINUX, 0.6, ev
     # Windows
-    if "windows" in t or "nt " in t or t.startswith("win") or data.get("os", "").lower() == "windows":
-        ev["hit"] = "windows"
-        return "windows", 0.6, ev
+    if (
+        OSFamily.WINDOWS.value in t
+        or "nt " in t
+        or t.startswith("win")
+        or data.get("os", "").lower() == OSFamily.WINDOWS.value
+    ):
+        ev["hit"] = OSFamily.WINDOWS
+        return OSFamily.WINDOWS, 0.6, ev
     # Apple
-    if "macos" in t or "os x" in t or "darwin" in t:
-        ev["hit"] = "macos"
-        return "macos", 0.6, ev
-    if "ios" in t or "ipados" in t:
-        ev["hit"] = "ios"
-        return "ios", 0.6, ev
+    if OSFamily.MACOS.value in t or "os x" in t or "darwin" in t:
+        ev["hit"] = OSFamily.MACOS
+        return OSFamily.MACOS, 0.6, ev
+    if OSFamily.IOS.value in t or "ipados" in t:
+        ev["hit"] = OSFamily.IOS
+        return OSFamily.IOS, 0.6, ev
     # Android
-    if "android" in t:
-        ev["hit"] = "android"
-        return "android", 0.6, ev
+    if OSFamily.ANDROID.value in t:
+        ev["hit"] = OSFamily.ANDROID
+        return OSFamily.ANDROID, 0.6, ev
     # BSD
     if "freebsd" in t or "openbsd" in t or "netbsd" in t:
-        ev["hit"] = "bsd"
-        return "bsd", 0.6, ev
+        ev["hit"] = OSFamily.BSD
+        return OSFamily.BSD, 0.6, ev
     return None, 0.0, ev
 
 
@@ -96,20 +91,20 @@ def normalize_os(text: str, data: dict | None = None) -> OSData:
     p.confidence = max(p.confidence, base_conf)
     p.evidence.update(ev)
 
-    if fam == "network-os":
+    if fam == OSFamily.NETWORK:
         p = parse_network(text, data, p)
-    elif fam == "windows":
+    elif fam == OSFamily.WINDOWS:
         p = parse_windows(text, data, p)
-    elif fam == "macos":
+    elif fam == OSFamily.MACOS:
         p = parse_macos(text, data, p)
-    elif fam == "linux":
+    elif fam == OSFamily.LINUX:
         p = parse_linux(text, data, p)
-    elif fam in ("android", "ios", "harmonyos"):
+    elif fam in (OSFamily.ANDROID, OSFamily.IOS, OSFamily.HARMONYOS):
         p = parse_mobile(text, data, p)
-    elif fam == "bsd":
+    elif fam == OSFamily.BSD:
         p = parse_bsd(text, data, p)
     else:
-        p.precision = "unknown"
+        p.precision = PrecisionLevel.UNKNOWN
 
     # Fallback arch from text if not already set elsewhere
     if not p.arch:
@@ -130,7 +125,7 @@ def choose_best_fact(candidates: list[OSData]) -> OSData:
         raise ValueError("No candidates")
     return sorted(
         candidates,
-        key=lambda c: (PRECISION_ORDER.get(c.precision, 0), c.confidence),
+        key=lambda c: (PRECISION_ORDER.get(_ensure_precision_enum(c.precision), 0), c.confidence),
         reverse=True,
     )[0]
 
@@ -141,7 +136,18 @@ def choose_best_fact(candidates: list[OSData]) -> OSData:
 
 
 def _score(p: OSData) -> tuple[int, float]:
-    return (PRECISION_ORDER.get(p.precision, 0), p.confidence)
+    return (PRECISION_ORDER.get(_ensure_precision_enum(p.precision), 0), p.confidence)
+
+
+def _ensure_precision_enum(value: PrecisionLevel | str | None) -> PrecisionLevel:
+    if isinstance(value, PrecisionLevel):
+        return value
+    if value is None:
+        return PrecisionLevel.UNKNOWN
+    try:
+        return PrecisionLevel(str(value))
+    except ValueError:
+        return PrecisionLevel.UNKNOWN
 
 
 def _union_unique(values: Iterable[str]) -> list[str]:
@@ -230,8 +236,8 @@ def merge_os(a: OSData, b: OSData, policy: str = "auto") -> OSData:
 
     # Precision & confidence: recompute based on version parts
     new_prec = precision_from_parts(r.version_major, r.version_minor, r.version_patch, r.version_build)
-    if new_prec == "product" and not r.product:
-        new_prec = "family" if r.family else "unknown"
+    if new_prec == PrecisionLevel.PRODUCT and not r.product:
+        new_prec = PrecisionLevel.FAMILY if r.family else PrecisionLevel.UNKNOWN
     r.precision = new_prec
     r.confidence = max(a.confidence, b.confidence)
     update_confidence(r, r.precision)

@@ -15,6 +15,7 @@ from .fortinet import FORTI_RE, parse_fortinet
 from .huawei import HUAWEI_RE, parse_huawei
 from .netgear import NETGEAR_RE, parse_netgear
 
+from os_normalizer.constants import OSFamily, PrecisionLevel
 from os_normalizer.models import OSData
 
 __all__ = [
@@ -57,5 +58,8 @@ def parse_network(text: str, data: dict | None, p: OSData) -> OSData:
     # Unknown network vendor; keep coarse
     p.vendor = p.vendor or "Unknown-Network"
     p.product = p.product or "Network OS"
-    p.precision = "family"
+    if not isinstance(p.family, OSFamily):
+        p.family = OSFamily(p.family) if p.family in OSFamily._value2member_map_ else None
+    p.family = p.family or OSFamily.NETWORK
+    p.precision = PrecisionLevel.FAMILY
     return p

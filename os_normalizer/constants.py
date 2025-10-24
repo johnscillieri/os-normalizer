@@ -1,5 +1,44 @@
 """Constants and static lookup tables for the OS fingerprinting package."""
 
+from enum import StrEnum
+
+
+class OSFamily(StrEnum):
+    """Canonical OS family identifiers used throughout the project."""
+
+    ANDROID = "android"
+    BSD = "bsd"
+    HARMONYOS = "harmonyos"
+    IOS = "ios"
+    LINUX = "linux"
+    MACOS = "macos"
+    NETWORK = "network-os"
+    WINDOWS = "windows"
+
+
+class PrecisionLevel(StrEnum):
+    """Granularity levels for parsed OS version information."""
+
+    UNKNOWN = "unknown"
+    FAMILY = "family"
+    PRODUCT = "product"
+    MAJOR = "major"
+    MINOR = "minor"
+    PATCH = "patch"
+    BUILD = "build"
+
+
+PRECISION_ORDER = {
+    PrecisionLevel.BUILD: 6,
+    PrecisionLevel.PATCH: 5,
+    PrecisionLevel.MINOR: 4,
+    PrecisionLevel.MAJOR: 3,
+    PrecisionLevel.PRODUCT: 2,
+    PrecisionLevel.FAMILY: 1,
+    PrecisionLevel.UNKNOWN: 0,
+}
+
+
 # Architecture synonyms
 ARCH_SYNONYMS = {
     "x64": "x86_64",

@@ -3,7 +3,10 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field, fields as dataclass_fields
+from enum import Enum
 from typing import Any
+
+from .constants import OSFamily, PrecisionLevel
 
 
 @dataclass
@@ -11,7 +14,7 @@ class OSData:
     """Structured representation of a parsed operating system."""
 
     # Core identity
-    family: str | None = None  # windows, linux, macos, ios, android, bsd, network-os
+    family: OSFamily | None = None  # windows, linux, macos, ios, android, bsd, network-os
     vendor: str | None = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
     product: str | None = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
     edition: str | None = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.
@@ -37,7 +40,7 @@ class OSData:
     build_id: str | None = None
 
     # Meta information
-    precision: str = "unknown"  # family|product|major|minor|patch|build
+    precision: PrecisionLevel = PrecisionLevel.UNKNOWN  # family|product|major|minor|patch|build
     confidence: float = 0.0
     evidence: dict[str, Any] = field(default_factory=dict)
 
@@ -47,7 +50,7 @@ class OSData:
     def __str__(self) -> str:  # pragma: no cover - formatting helper
         parts: list[str] = []
 
-        if self.family == "windows":
+        if self.family == OSFamily.WINDOWS:
             return _format_windows(self)
 
         # Prefer vendor + product; fallback to pretty_name; then family
@@ -57,7 +60,10 @@ class OSData:
         elif self.pretty_name:
             parts.append(self.pretty_name)
         else:
-            parts.append(self.family or "Unknown OS")
+            if isinstance(self.family, OSFamily):
+                parts.append(self.family.value)
+            else:
+                parts.append(self.family or "Unknown OS")
 
         # Version string (major[.minor[.patch]]) and optional build
         ver_chunks: list[str] = []
@@ -100,8 +106,9 @@ class OSData:
             parts.append(f"[build: {self.build_id}]")
 
         # Precision/confidence summary
-        if self.precision and self.precision != "unknown":
-            parts.append(f"{{{self.precision}:{self.confidence:.2f}}}")
+        if self.precision and self.precision != PrecisionLevel.UNKNOWN:
+            label = self.precision.value if isinstance(self.precision, PrecisionLevel) else str(self.precision)
+            parts.append(f"{{{label}:{self.confidence:.2f}}}")
         elif self.confidence:
             parts.append(f"{{{self.confidence:.2f}}}")
 
@@ -129,6 +136,8 @@ class OSData:
                 sval = none_str
             elif name == "confidence" and isinstance(val, (int, float)):
                 sval = f"{float(val):.2f}"
+            elif isinstance(val, Enum):
+                sval = val.value
             elif isinstance(val, list):
                 sval = ", ".join(str(x) for x in val)
             elif isinstance(val, dict):
@@ -159,7 +168,7 @@ def _format_windows(p: OSData) -> str:
 
 if __name__ == "__main__":
     x = OSData(
-        family="linux",
+        family=OSFamily.LINUX,
         vendor="Fedora Project",
         product="Fedora Linux",
         version_major=33,
@@ -168,7 +177,7 @@ if __name__ == "__main__":
         distro="fedora",
         like_distros=[],
         pretty_name="Fedora Linux",
-        precision="major",
+        precision=PrecisionLevel.MAJOR,
         confidence=0.7,
         evidence={"hit": "linux"},
     )

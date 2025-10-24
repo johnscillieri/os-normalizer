@@ -3,6 +3,7 @@
 import re
 from typing import Any
 
+from os_normalizer.constants import OSFamily, PrecisionLevel
 from os_normalizer.helpers import (
     parse_semver_like,
     precision_from_parts,
@@ -16,7 +17,7 @@ def parse_mobile(text: str, data: dict[str, Any], p: OSData) -> OSData:
     t = text.lower()
 
     # Detect if it's HarmonyOS before other mobile platforms to avoid vendor overlaps
-    if "harmonyos" in t:
+    if OSFamily.HARMONYOS.value in t:
         p.product = "HarmonyOS"
         p.vendor = "Huawei"
         m = re.search(r"\b(\d+)(?:\.(\d+))?(?:\.(\d+))?(?:\.(\d+))?\b", text)
@@ -26,10 +27,10 @@ def parse_mobile(text: str, data: dict[str, Any], p: OSData) -> OSData:
             p.version_patch = int(m.group(3)) if m.group(3) else None
             p.version_build = m.group(4) if m.group(4) else None
     # Detect if it's iOS or Android
-    elif "ios" in t or "ipados" in t:
+    elif OSFamily.IOS.value in t or "ipados" in t:
         p.product = "iOS/iPadOS"
         p.vendor = "Apple"
-    elif "android" in t:
+    elif OSFamily.ANDROID.value in t:
         p.product = "Android"
         p.vendor = "Google"
     else:
@@ -45,7 +46,7 @@ def parse_mobile(text: str, data: dict[str, Any], p: OSData) -> OSData:
     p.precision = (
         precision_from_parts(p.version_major, p.version_minor, p.version_patch, p.version_build)
         if p.version_major is not None
-        else "product"
+        else PrecisionLevel.PRODUCT
     )
 
     # Boost confidence based on precision
