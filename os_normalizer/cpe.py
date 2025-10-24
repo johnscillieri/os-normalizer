@@ -124,6 +124,8 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
         return "google", "android", "android"
     if fam == "ios":
         return "apple", "iphone_os", "ios"
+    if fam == "harmonyos":
+        return "huawei", "harmonyos", "harmonyos"
 
     # Fallback
     return (vendor or fam or "unknown"), (product or (fam or "unknown")).replace(" ", "_"), fam or "unknown"
@@ -215,6 +217,19 @@ def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:
         else:
             ver = "*"
         return ver, "*", "*"
+
+    if strategy == "harmonyos":
+        if maj is not None:
+            if minr is not None and pat is not None:
+                ver = f"{maj}.{minr}.{pat}"
+            elif minr is not None:
+                ver = f"{maj}.{minr}"
+            else:
+                ver = f"{maj}"
+        else:
+            ver = "*"
+        update = build or "*"
+        return ver, update, "*"
 
     # Generic fallback
     if build:

@@ -3,6 +3,11 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## [Unreleased]
+
+- Added: HarmonyOS detection for Huawei devices, including dedicated parsing and metadata.
+- Added: HarmonyOS normalization captures build identifiers (e.g., `5.0.0.107`) and propagates them into generated CPE data.
+
 ## [0.4.3] - 2025-10-20
 
 - Fixed: Windows build parsing and inconsistent strings
