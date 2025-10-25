@@ -73,3 +73,11 @@ exclude = [
   "os_normalizer.egg-info",
   "tests",
 ]
+
+# pyproject.toml
+[tool.uv-ship]
+release-branch = "main"
+tag-prefix = "v"
+allow-dirty = false
+changelog-path = "CHANGELOG.md"
+changelog-template = "- {message} [{hash}]"
