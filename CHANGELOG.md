@@ -3,8 +3,13 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
-## [Unreleased]
+## `v0.4.4` — [2025-10-25]
 
+- Add uv-ship config [afd3bed]
+- Merge pull request #2 from johnscillieri/codex/refactor-family-strings-into-constants [cf84c0f]
+- Polish enum usage and update changelog [c3fb7f4]
+- Merge pull request #1 from johnscillieri/codex/add-support-for-huawei-harmonyos [45fe0f9]
+- Document HarmonyOS support addition [584ed2f]
 - Added: HarmonyOS detection for Huawei devices, including dedicated parsing and metadata.
 - Added: HarmonyOS normalization captures build identifiers (e.g., `5.0.0.107`) and propagates them into generated CPE data.
 - Changed: Replaced string literals for OS families and precision tiers with shared enums and ordering constants across the normalization pipeline.
