@@ -81,3 +81,4 @@ tag-prefix = "v"
 allow-dirty = false
 changelog-path = "CHANGELOG.md"
 changelog-template = "- {message} [{hash}]"
+unreleased-tag = "Unreleased"
