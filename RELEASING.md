@@ -17,4 +17,7 @@ This project uses a modern PEP 621 `pyproject.toml` with the Hatchling build bac
 ## Releasing
 
 - `uv-ship next <type>` where type is major|minor|patch
-- Follow the prompts and release the new version.
+- Follow the prompts and release the new version to Github
+- `rm -rf dist`
+- `uv build`
+- `uvx twine upload dist/*`
