@@ -109,6 +109,12 @@ def _map_vendor_product(p: OSData) -> tuple[str, str, str]:
             return "netbsd", "netbsd", "netbsd"
         return vendor or "bsd", product or "bsd", "bsd"
 
+    if family == OSFamily.SOLARIS:
+        return "oracle", "solaris", "solaris"
+
+    if family == OSFamily.ESXI:
+        return "vmware", "esxi", "esxi"
+
     # Network OS
     if family == OSFamily.NETWORK:
         if vendor == "cisco":
@@ -205,6 +211,18 @@ def _fmt_version(p: OSData, strategy: str) -> tuple[str, str, str]:
         else:
             ver = "*"
         return ver, "*", (edition or "*")
+
+    if strategy in ("solaris", "esxi"):
+        if maj is not None:
+            ver = str(maj)
+            if minr is not None:
+                ver = f"{ver}.{minr}"
+                if pat is not None:
+                    ver = f"{ver}.{pat}"
+        else:
+            ver = "*"
+        update = build or "*"
+        return ver, update, "*"
 
     if strategy == "fortios":
         if maj is not None and minr is not None and pat is not None:

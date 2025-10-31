@@ -14,7 +14,7 @@ class OSData:
     """Structured representation of a parsed operating system."""
 
     # Core identity
-    family: OSFamily | None = None  # windows, linux, macos, ios, android, bsd, network-os
+    family: OSFamily | None = None  # windows, linux, macos, ios, android, bsd, solaris, esxi, network-os
     vendor: str | None = None  # Microsoft, Apple, Canonical, Cisco, Juniper, Fortinet, Huawei, Netgear…
     product: str | None = None  # Windows 11, Ubuntu, macOS, IOS XE, Junos, FortiOS, VRP, Firmware
     edition: str | None = None  # Pro/Enterprise/LTSC; universalk9/ipbase; etc.

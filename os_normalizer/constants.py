@@ -8,11 +8,13 @@ class OSFamily(StrEnum):
 
     ANDROID = "android"
     BSD = "bsd"
+    ESXI = "esxi"
     HARMONYOS = "harmonyos"
     IOS = "ios"
     LINUX = "linux"
     MACOS = "macos"
     NETWORK = "network-os"
+    SOLARIS = "solaris"
     WINDOWS = "windows"
 
 
@@ -53,6 +55,9 @@ ARCH_SYNONYMS = {
     "armv7": "arm",
     "armv7l": "arm",
     "ppc64le": "ppc64le",
+    "sparc": "sparc",
+    "sun4u": "sparc",
+    "sun4v": "sparc",
 }
 
 # Windows build map (build number range -> product name, marketing channel)

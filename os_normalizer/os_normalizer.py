@@ -8,10 +8,12 @@ from os_normalizer.helpers import extract_arch_from_text, precision_from_parts, 
 from os_normalizer.cpe import build_cpe23
 from os_normalizer.models import OSData
 from os_normalizer.parsers.bsd import parse_bsd
+from os_normalizer.parsers.esxi import parse_esxi
 from os_normalizer.parsers.linux import parse_linux
 from os_normalizer.parsers.macos import parse_macos
 from os_normalizer.parsers.mobile import parse_mobile
 from os_normalizer.parsers.network import parse_network
+from os_normalizer.parsers.solaris import parse_solaris
 from os_normalizer.parsers.windows import parse_windows
 
 # ============================================================
@@ -47,6 +49,14 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[OSFamily | None, flo
 
         ev["hit"] = OSFamily.NETWORK
         return OSFamily.NETWORK, 0.7, ev
+    # VMware ESXi
+    if "vmkernel" in t or "vmware esxi" in t or " esxi" in t or t.startswith("esxi"):
+        ev["hit"] = OSFamily.ESXI
+        return OSFamily.ESXI, 0.65, ev
+    # Solaris / SunOS
+    if "sunos" in t or "solaris" in t:
+        ev["hit"] = OSFamily.SOLARIS
+        return OSFamily.SOLARIS, 0.65, ev
     # Linux
     if OSFamily.LINUX.value in t or any(k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")):
         ev["hit"] = OSFamily.LINUX
@@ -99,6 +109,10 @@ def normalize_os(text: str, data: dict | None = None) -> OSData:
         p = parse_macos(text, data, p)
     elif fam == OSFamily.LINUX:
         p = parse_linux(text, data, p)
+    elif fam == OSFamily.SOLARIS:
+        p = parse_solaris(text, data, p)
+    elif fam == OSFamily.ESXI:
+        p = parse_esxi(text, data, p)
     elif fam in (OSFamily.ANDROID, OSFamily.IOS, OSFamily.HARMONYOS):
         p = parse_mobile(text, data, p)
     elif fam == OSFamily.BSD:
