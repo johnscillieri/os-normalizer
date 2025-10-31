@@ -3,7 +3,7 @@
 import re
 from typing import Any
 
-from .constants import ARCH_SYNONYMS, PrecisionLevel
+from .constants import ARCH_SYNONYMS, ARCHITECTURE_TOKENS, PrecisionLevel
 from .models import OSData
 
 
@@ -61,10 +61,10 @@ def canonical_key(p: OSData) -> str:
 
 
 # Regex for extracting an architecture token from free-form text
-ARCH_TEXT_RE = re.compile(
-    r"\b(x86_64|amd64|x64|x86|i386|i686|arm64|aarch64|armv8|armv7l?|ppc64le|sparc|sun4u|sun4v)\b",
-    re.IGNORECASE,
+_ARCH_PATTERN = "|".join(
+    sorted((re.escape(token) for token in ARCHITECTURE_TOKENS), key=len, reverse=True)
 )
+ARCH_TEXT_RE = re.compile(rf"\b({_ARCH_PATTERN})\b", re.IGNORECASE)
 
 
 def extract_arch_from_text(text: str) -> str | None:
