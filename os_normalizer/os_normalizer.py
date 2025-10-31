@@ -1,11 +1,12 @@
-from datetime import UTC, datetime
-from typing import Any, Iterable
-from dataclasses import replace, fields
 import copy
+from collections.abc import Iterable
+from dataclasses import fields, replace
+from datetime import UTC, datetime
+from typing import Any
 
-from os_normalizer.constants import OSFamily, PRECISION_ORDER, PrecisionLevel
-from os_normalizer.helpers import extract_arch_from_text, precision_from_parts, update_confidence
+from os_normalizer.constants import PRECISION_ORDER, OSFamily, PrecisionLevel
 from os_normalizer.cpe import build_cpe23
+from os_normalizer.helpers import extract_arch_from_text, precision_from_parts, update_confidence
 from os_normalizer.models import OSData
 from os_normalizer.parsers.bsd import parse_bsd
 from os_normalizer.parsers.esxi import parse_esxi
@@ -15,6 +16,7 @@ from os_normalizer.parsers.mobile import parse_mobile
 from os_normalizer.parsers.network import parse_network
 from os_normalizer.parsers.solaris import parse_solaris
 from os_normalizer.parsers.windows import parse_windows
+
 
 # ============================================================
 # Family detection (orchestrator logic)
@@ -58,7 +60,9 @@ def detect_family(text: str, data: dict[str, Any]) -> tuple[OSFamily | None, flo
         ev["hit"] = OSFamily.SOLARIS
         return OSFamily.SOLARIS, 0.65, ev
     # Linux
-    if OSFamily.LINUX.value in t or any(k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")):
+    if OSFamily.LINUX.value in t or any(
+        k in data for k in ("ID", "ID_LIKE", "PRETTY_NAME", "VERSION_ID", "VERSION_CODENAME")
+    ):
         ev["hit"] = OSFamily.LINUX
         return OSFamily.LINUX, 0.6, ev
     # Windows

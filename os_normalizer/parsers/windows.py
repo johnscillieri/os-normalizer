@@ -7,12 +7,12 @@ from dataclasses import dataclass
 from typing import TYPE_CHECKING, Any
 
 from os_normalizer.constants import (
-    PrecisionLevel,
     WINDOWS_BUILD_MAP,
     WINDOWS_NT_CLIENT_MAP,
     WINDOWS_NT_SERVER_MAP,
     WINDOWS_PRODUCT_PATTERNS,
     WINDOWS_SERVER_BUILD_MAP,
+    PrecisionLevel,
 )
 from os_normalizer.helpers import extract_arch_from_text, update_confidence
 
