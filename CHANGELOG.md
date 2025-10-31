@@ -3,6 +3,13 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## `v0.5.0` — [2025-10-30]
+
+- Update release docs, add 3.14 classifier, sort imports [b7e07de]
+- Add a ton more architectures and extract into constants [bd481f8]
+- Add esxi and solaris support [8c14505]
+- Set the unreleased tag for uv-ship [791361c]
+
 ## `v0.4.4` — [2025-10-25]
 
 - Add uv-ship config [afd3bed]
