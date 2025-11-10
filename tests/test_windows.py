@@ -1374,6 +1374,19 @@ WINDOWS_OSDATA_CASES = [
             os_key="cpe:2.3:o:microsoft:windows_10_22h2:10.0.19045:*:*:*:*:*:x64:*",
         ),
     ),
+    (
+        "Windows",
+        None,
+        OSData(
+            family="windows",
+            vendor="Microsoft",
+            product="Windows",
+            precision="family",
+            confidence=0.6,
+            evidence={"hit": "windows"},
+            os_key="cpe:2.3:o:microsoft:windows:*:*:*:*:*:*:*:*",
+        ),
+    ),
 ]
 
 

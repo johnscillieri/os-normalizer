@@ -29,6 +29,28 @@ LINUX_OSDATA_CASES = [
         ),
     ),
     (
+        "Linux host 5.15.0-122-generic x86-64",
+        {"os_release": 'NAME="Ubuntu"\nID=ubuntu\nVERSION_ID="22.04.4"\nVERSION_CODENAME=jammy'},
+        OSData(
+            family="linux",
+            vendor="Canonical",
+            product="Ubuntu",
+            codename="Jammy",
+            version_major=22,
+            version_minor=4,
+            version_patch=4,
+            kernel_name="linux",
+            kernel_version="5.15.0-122-generic",
+            arch="x86_64",
+            distro="ubuntu",
+            pretty_name="Ubuntu",
+            precision="patch",
+            confidence=0.8,
+            evidence={"hit": "linux"},
+            os_key="cpe:2.3:o:canonical:ubuntu_linux:22.04:*:*:*:*:*:x64:*",
+        ),
+    ),
+    (
         "Linux host 5.10.0-30-amd64",
         {"os_release": 'NAME="Debian GNU/Linux"\nID=debian\nVERSION_ID="12"\nVERSION_CODENAME=bookworm'},
         OSData(

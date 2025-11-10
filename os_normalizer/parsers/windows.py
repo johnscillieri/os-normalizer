@@ -100,12 +100,15 @@ def parse_windows(text: str, data: dict[str, Any], p: OSData) -> OSData:
     server_hint = _initial_server_hint(tl, product)
     state = _extract_version_state(tl)
     product, server_hint = _apply_build_context(state, product, server_hint)
-    p.product = _finalize_product_label(tl, product, state, server_hint)
+    p.product = _finalize_product_label(tl, product, state, server_hint) or "Windows"
 
     defaults = PRODUCT_DEFAULTS.get(p.product or "")
     _apply_version_numbers(p, defaults, state)
     _set_kernel_version(p, defaults, state)
     _finalize_precision_and_confidence(p, state)
+
+    if defaults is None and not state.explicit:
+        p.kernel_name = None
 
     return p
 
@@ -187,12 +190,15 @@ def _finalize_product_label(tl: str, product: str | None, state: VersionState, s
     return product
 
 
-def _apply_version_numbers(p: OSData, defaults: ProductDefaults, state: VersionState) -> None:
+def _apply_version_numbers(p: OSData, defaults: ProductDefaults | None, state: VersionState) -> None:
     """Move version components from the parse state into the OSData payload."""
-    p.version_major = state.nt_major if state.nt_major is not None else defaults.version_major
-    p.version_minor = state.nt_minor if state.nt_minor is not None else defaults.version_minor
-    p.version_patch = state.patch if state.patch is not None else defaults.version_patch
-    p.version_build = state.build if state.build is not None else defaults.version_build
+    def pick(explicit: Any, fallback: Any) -> Any:
+        return explicit if explicit is not None else fallback
+
+    p.version_major = pick(state.nt_major, defaults.version_major if defaults else None)
+    p.version_minor = pick(state.nt_minor, defaults.version_minor if defaults else None)
+    p.version_patch = pick(state.patch, defaults.version_patch if defaults else None)
+    p.version_build = pick(state.build, defaults.version_build if defaults else None)
 
 
 def _set_kernel_version(p: OSData, defaults: ProductDefaults | None, state: VersionState) -> None:
@@ -219,6 +225,15 @@ def _set_kernel_version(p: OSData, defaults: ProductDefaults | None, state: Vers
 def _finalize_precision_and_confidence(p: OSData, state: VersionState) -> None:
     """Derive precision/confidence and record evidence for explicit NT versions."""
     p.precision = _derive_precision(p.version_major, p.version_minor, p.version_patch, p.version_build)
+
+    if (
+        p.precision == PrecisionLevel.PRODUCT
+        and p.version_major is None
+        and p.version_minor is None
+        and p.version_patch is None
+        and p.version_build is None
+    ):
+        p.precision = PrecisionLevel.FAMILY
 
     if state.explicit and state.nt_major is not None:
         norm_major = min(10, state.nt_major)
