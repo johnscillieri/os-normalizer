@@ -118,6 +118,70 @@ BSD_OSDATA_CASES = [
             evidence={"hit": "bsd"},
         ),
     ),
+    (
+        "FreeBSD host with os-release",
+        {
+            "os_release": 'NAME="FreeBSD"\nVERSION="13.2-RELEASE"\nID=freebsd\nVERSION_ID="13.2"\nID_LIKE="freebsd"\nPRETTY_NAME="FreeBSD 13.2-RELEASE"'
+        },
+        OSData(
+            family="bsd",
+            vendor="FreeBSD",
+            product="FreeBSD",
+            channel="RELEASE",
+            version_major=13,
+            version_minor=2,
+            kernel_name="freebsd",
+            like_distros=["freebsd"],
+            distro="freebsd",
+            pretty_name="FreeBSD 13.2-RELEASE",
+            precision="minor",
+            confidence=0.75,
+            evidence={"hit": "bsd"},
+            os_key="cpe:2.3:o:freebsd:freebsd:13.2:*:*:*:*:*:*:*",
+        ),
+    ),
+    (
+        "OpenBSD os-release with codename",
+        {
+            "os_release": 'NAME="OpenBSD"\nVERSION="7.5"\nID=openbsd\nVERSION_ID="7.5"\nVERSION_CODENAME=song\nPRETTY_NAME="OpenBSD 7.5 (Song)"'
+        },
+        OSData(
+            family="bsd",
+            vendor="OpenBSD",
+            product="OpenBSD",
+            codename="Song",
+            version_major=7,
+            version_minor=5,
+            kernel_name="openbsd",
+            distro="openbsd",
+            pretty_name="OpenBSD 7.5 (Song)",
+            precision="minor",
+            confidence=0.75,
+            evidence={"hit": "bsd"},
+            os_key="cpe:2.3:o:openbsd:openbsd:7.5:*:*:*:*:*:*:*",
+        ),
+    ),
+    (
+        "NetBSD os-release stable train",
+        {
+            "os_release": 'NAME="NetBSD"\nVERSION="10.0_STABLE"\nID=netbsd\nVERSION_ID="10.0"\nPRETTY_NAME="NetBSD 10.0_STABLE"'
+        },
+        OSData(
+            family="bsd",
+            vendor="NetBSD",
+            product="NetBSD",
+            channel="STABLE",
+            version_major=10,
+            version_minor=0,
+            kernel_name="netbsd",
+            distro="netbsd",
+            pretty_name="NetBSD 10.0_STABLE",
+            precision="minor",
+            confidence=0.75,
+            evidence={"hit": "bsd"},
+            os_key="cpe:2.3:o:netbsd:netbsd:10.0:*:*:*:*:*:*:*",
+        ),
+    ),
 ]
 
 

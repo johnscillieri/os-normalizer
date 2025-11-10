@@ -37,6 +37,22 @@ MOBILE_OSDATA_CASES = [
         ),
     ),
     (
+        "iPhone iOS 17.5.1",
+        None,
+        OSData(
+            family="ios",
+            vendor="Apple",
+            product="iOS/iPadOS",
+            version_major=17,
+            version_minor=5,
+            version_patch=1,
+            precision="patch",
+            confidence=0.8,
+            evidence={"hit": "ios"},
+            os_key="cpe:2.3:o:apple:iphone_os:17.5.1:*:*:*:*:*:*:*",
+        ),
+    ),
+    (
         "iPadOS 16.7.6",
         None,
         OSData(
