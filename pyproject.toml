@@ -1,6 +1,6 @@
 [project]
 name = "os-normalizer"
-version = "0.5.0"
+version = "0.5.1"
 description = "Normalize raw OS strings/metadata into structured data (family, product, version, arch)."
 readme = "README.md"
 requires-python = ">=3.11"
