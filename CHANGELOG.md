@@ -3,6 +3,12 @@
 All notable changes to this project are documented here.
 This file adheres to Keep a Changelog and Semantic Versioning.
 
+## `v0.5.1` — [Unreleased]
+
+- Added BSD parser support for `/etc/os-release` blobs (FreeBSD, OpenBSD, NetBSD) plus fixtures that lock codename/channel/distro handling.
+- Normalized the hyphenated `x86-64` architecture alias to `x86_64` and added regression coverage in the Linux suite.
+- Fixed Windows fallback parsing so bare “Windows” banners no longer crash, now emit family-level `OSData`, and keep kernel metadata unset when unknown.
+
 ## `v0.5.0` — [2025-10-30]
 
 - Update release docs, add 3.14 classifier, sort imports [b7e07de]
